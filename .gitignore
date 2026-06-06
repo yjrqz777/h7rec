@@ -1,0 +1,37 @@
+# Keil uVision build output
+MDK-ARM/h7rec/
+MDK-ARM/*.lst
+MDK-ARM/*.map
+MDK-ARM/*.lnp
+MDK-ARM/*.axf
+MDK-ARM/*.hex
+MDK-ARM/*.bin
+MDK-ARM/*.elf
+MDK-ARM/*.htm
+MDK-ARM/*.build_log.htm
+MDK-ARM/*.dep
+MDK-ARM/*.iex
+MDK-ARM/*.obj
+MDK-ARM/*.o
+MDK-ARM/*.d
+MDK-ARM/*.crf
+
+# Keil user/workspace files
+MDK-ARM/*.uvguix.*
+MDK-ARM/*.uvoptx.bak
+MDK-ARM/*.uvprojx.bak
+MDK-ARM/*.scvd
+MDK-ARM/JLinkLog.txt
+MDK-ARM/JLinkSettings.ini
+
+# VS Code runtime files copied from Keil assistant
+.vscode/*.log
+.vscode/*.lock
+MDK-ARM/.vscode/*.log
+MDK-ARM/.vscode/*.lock
+
+# Windows and editor noise
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
