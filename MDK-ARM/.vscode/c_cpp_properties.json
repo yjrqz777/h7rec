@@ -11,6 +11,7 @@
                 "d:\\document\\code\\stm32\\H7\\h7rec\\Middlewares\\Third_Party\\FreeRTOS\\Source\\portable\\RVDS\\ARM_CM4F",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\Drivers\\CMSIS\\Device\\ST\\STM32H7xx\\Include",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\Drivers\\CMSIS\\Include",
+                "d:\\document\\code\\stm32\\H7\\h7rec\\BSP\\ST7735",
                 "D:\\App\\Keil\\Keil_v5\\ARM\\ARMCC\\include",
                 "D:\\App\\Keil\\Keil_v5\\ARM\\ARMCC\\include\\rw",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\MDK-ARM",

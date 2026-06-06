@@ -25,7 +25,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "lcd.h"
+#include "rtc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,7 +58,43 @@ const osThreadAttr_t defaultTask_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
+static void LED_Blink(uint32_t Hdelay,uint32_t Ldelay,uint8_t Mode)
+{
+	// if(Mode == 0){
+	// 	HAL_GPIO_WritePin(RGB_R_GPIO_Port,RGB_R_Pin,GPIO_PIN_RESET);
+	// 	HAL_Delay(Hdelay - 1);
+	// 	HAL_GPIO_WritePin(RGB_R_GPIO_Port,RGB_R_Pin,GPIO_PIN_SET);
+	// 	HAL_Delay(Ldelay - 1);
+	// }
+	// 	else if(Mode == 1){
+	// 	HAL_GPIO_WritePin(RGB_G_GPIO_Port,RGB_G_Pin,GPIO_PIN_RESET);
+	// 	HAL_Delay(Hdelay - 1);
+	// 	HAL_GPIO_WritePin(RGB_G_GPIO_Port,RGB_G_Pin,GPIO_PIN_SET);
+	// 	HAL_Delay(Ldelay - 1);
+	// }
+	// 	else	if(Mode == 2){
+	// 	HAL_GPIO_WritePin(RGB_B_GPIO_Port,RGB_B_Pin,GPIO_PIN_RESET);
+	// 	HAL_Delay(Hdelay - 1);
+	// 	HAL_GPIO_WritePin(RGB_B_GPIO_Port,RGB_B_Pin,GPIO_PIN_SET);
+	// 	HAL_Delay(Ldelay - 1);
+	// }
+	// 	else {
+	// 	HAL_GPIO_WritePin(RGB_R_GPIO_Port,RGB_R_Pin|RGB_G_Pin|RGB_B_Pin,GPIO_PIN_RESET);
+	// 	HAL_Delay(Hdelay - 1);
+	// 	HAL_GPIO_WritePin(RGB_R_GPIO_Port,RGB_R_Pin|RGB_G_Pin|RGB_B_Pin,GPIO_PIN_SET);
+	// 	HAL_Delay(Ldelay - 1);
+	// }
+}
 
+static void RTC_CalendarShow(RTC_DateTypeDef *sdatestructureget,RTC_TimeTypeDef *stimestructureget)
+{
+  /* 必须同时获取时间和日期 不然会导致下次RTC不能读取 */
+  /* Both time and date must be obtained or RTC cannot be read next time */
+  /* Get the RTC current Time */
+  HAL_RTC_GetTime(&hrtc, stimestructureget, RTC_FORMAT_BIN);
+  /* Get the RTC current Date */
+  HAL_RTC_GetDate(&hrtc, sdatestructureget, RTC_FORMAT_BIN);
+}
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
@@ -114,9 +151,29 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
+  	uint8_t text[20];
+	RTC_DateTypeDef sdatestructureget;
+	RTC_TimeTypeDef stimestructureget;
   /* Infinite loop */
   for(;;)
   {
+		RTC_CalendarShow(&sdatestructureget,&stimestructureget);
+		
+		if (stimestructureget.Seconds % 2 == 1)
+		{
+			sprintf((char *)&text,"Time: %02d:%02d", stimestructureget.Hours, stimestructureget.Minutes);
+			LED_Blink(500,500,0);
+		}
+		else
+		{
+			sprintf((char *)&text,"Time: %02d %02d", stimestructureget.Hours, stimestructureget.Minutes);
+			LED_Blink(500,500,1);
+		}
+		LCD_ShowString(4, 58, 160, 16, 16, text);
+		
+		sprintf((char *)&text,"Tick: %d ms",HAL_GetTick());
+		LCD_ShowString(4, 74, 160, 16, 16,text);
+
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */

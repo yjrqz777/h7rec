@@ -5,6 +5,8 @@
 #include "st7735.h"
 #include <stdio.h>
 
+#define TFT96
+
 #define WHITE         	 0xFFFF
 #define BLACK         	 0x0000	  
 #define BLUE         	 0x001F  
