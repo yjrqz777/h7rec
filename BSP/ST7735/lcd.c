@@ -273,7 +273,7 @@ void LCD_ShowString(uint16_t x,uint16_t y,uint16_t width,uint16_t height,uint8_t
 static int32_t lcd_init(void)
 {
 	int32_t result = ST7735_OK;
-	HAL_TIMEx_PWMN_Start(LCD_Brightness_timer,LCD_Brightness_channel);
+	HAL_TIM_PWM_Start(LCD_Brightness_timer,LCD_Brightness_channel);
 	return result;
 }
 

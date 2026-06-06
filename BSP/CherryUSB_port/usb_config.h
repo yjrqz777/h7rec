@@ -8,20 +8,16 @@
 
 /* ================ USB common Configuration ================ */
 
-#ifdef __RTTHREAD__
-#include <rtthread.h>
+#include "SEGGER_RTT.h"
 
-#define CONFIG_USB_PRINTF(...) rt_kprintf(__VA_ARGS__)
-#else
-#define CONFIG_USB_PRINTF(...) printf(__VA_ARGS__)
-#endif
+#define CONFIG_USB_PRINTF(...) SEGGER_RTT_printf(0, __VA_ARGS__)
 
 #ifndef CONFIG_USB_DBG_LEVEL
 #define CONFIG_USB_DBG_LEVEL USB_DBG_INFO
 #endif
 
 /* Enable print with color */
-#define CONFIG_USB_PRINTF_COLOR_ENABLE
+// #define CONFIG_USB_PRINTF_COLOR_ENABLE
 
 // #define CONFIG_USB_DCACHE_ENABLE
 
@@ -118,7 +114,7 @@
 #define CONFIG_USBDEV_MTP_MAX_PATHNAME 256
 #endif
 
-#define CONFIG_USBDEV_MTP_THREAD
+// #define CONFIG_USBDEV_MTP_THREAD
 
 #ifndef CONFIG_USBDEV_MTP_PRIO
 #define CONFIG_USBDEV_MTP_PRIO 4
@@ -145,8 +141,8 @@
 #define CONFIG_USBDEV_RNDIS_VENDOR_DESC "CherryUSB"
 #endif
 
-#define CONFIG_USBDEV_RNDIS_USING_LWIP
-#define CONFIG_USBDEV_CDC_ECM_USING_LWIP
+// #define CONFIG_USBDEV_RNDIS_USING_LWIP
+// #define CONFIG_USBDEV_CDC_ECM_USING_LWIP
 
 /* ================ USB HOST Stack Configuration ================== */
 
@@ -242,7 +238,7 @@
 #define CONFIG_USBHOST_RTL8152_ETH_MAX_TX_SIZE (2048)
 #endif
 
-#define CONFIG_USBHOST_BLUETOOTH_HCI_H4
+// #define CONFIG_USBHOST_BLUETOOTH_HCI_H4
 // #define CONFIG_USBHOST_BLUETOOTH_HCI_LOG
 
 #ifndef CONFIG_USBHOST_BLUETOOTH_TX_SIZE
