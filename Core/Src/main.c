@@ -19,8 +19,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "fatfs.h"
 #include "memorymap.h"
 #include "rtc.h"
+#include "sdmmc.h"
 #include "spi.h"
 #include "tim.h"
 #include "usb_otg.h"
@@ -29,7 +31,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lcd.h"
-
+#include "SEGGER_RTT.h"
+#include "cherryusb_app.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -103,6 +106,9 @@ int main(void)
   MX_RTC_Init();
   MX_SPI2_Init();
   MX_TIM2_Init();
+//  MX_USB_OTG_FS_PCD_Init();
+  MX_SDMMC1_SD_Init();
+  MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
   CherryUSB_DeviceInit();
 	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);//启动PWM
