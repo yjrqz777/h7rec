@@ -4,6 +4,8 @@
             "name": "h7rec",
             "includePath": [
                 "d:\\document\\code\\stm32\\H7\\h7rec\\Core\\Inc",
+                "d:\\document\\code\\stm32\\H7\\h7rec\\App\\FileTransfer",
+                "d:\\document\\code\\stm32\\H7\\h7rec\\App\\Storage",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\Drivers\\STM32H7xx_HAL_Driver\\Inc",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\Drivers\\STM32H7xx_HAL_Driver\\Inc\\Legacy",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\Middlewares\\Third_Party\\FreeRTOS\\Source\\include",
@@ -21,13 +23,17 @@
                 "d:\\document\\code\\stm32\\H7\\h7rec\\BSP\\CherryUSB_port",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\BSP\\SEGGER_RTT_V798a\\RTT",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\BSP\\SEGGER_RTT_V798a\\Config",
+                "d:\\document\\code\\stm32\\H7\\h7rec\\FATFS\\Target",
+                "d:\\document\\code\\stm32\\H7\\h7rec\\FATFS\\App",
+                "d:\\document\\code\\stm32\\H7\\h7rec\\Middlewares\\Third_Party\\FatFs\\src",
                 "D:\\App\\Keil\\Keil_v5\\ARM\\ARMCC\\include",
                 "D:\\App\\Keil\\Keil_v5\\ARM\\ARMCC\\include\\rw",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\MDK-ARM",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\Core\\Src",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\Drivers\\STM32H7xx_HAL_Driver\\Src",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\Middlewares\\Third_Party\\FreeRTOS\\Source",
-                "d:\\document\\code\\stm32\\H7\\h7rec\\Middlewares\\Third_Party\\FreeRTOS\\Source\\portable\\MemMang"
+                "d:\\document\\code\\stm32\\H7\\h7rec\\Middlewares\\Third_Party\\FreeRTOS\\Source\\portable\\MemMang",
+                "d:\\document\\code\\stm32\\H7\\h7rec\\Middlewares\\Third_Party\\FatFs\\src\\option"
             ],
             "defines": [
                 "USE_PWR_LDO_SUPPLY",

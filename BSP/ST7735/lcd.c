@@ -16,7 +16,7 @@
 //SPI Driver
 #define SPI spi2
 #define SPI_Drv (&hspi2)
-#define delay_ms HAL_Delay
+#define delay_ms osDelay
 #define get_tick HAL_GetTick
 //LCD_Brightness timer
 #define LCD_Brightness_timer &htim2

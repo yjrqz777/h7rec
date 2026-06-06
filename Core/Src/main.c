@@ -106,13 +106,11 @@ int main(void)
   MX_RTC_Init();
   MX_SPI2_Init();
   MX_TIM2_Init();
-//  MX_USB_OTG_FS_PCD_Init();
+  // MX_USB_OTG_FS_PCD_Init();
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-  CherryUSB_DeviceInit();
 	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);//启动PWM
-	LCD_Test();
 
   /* USER CODE END 2 */
 

@@ -54,7 +54,7 @@
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
-          <BrowseInformation>1</BrowseInformation>
+          <BrowseInformation>0</BrowseInformation>
           <ListingPath></ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_PWR_LDO_SUPPLY,USE_HAL_DRIVER,STM32H743xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../BSP/ST7735;../BSP/CherryUSB-1.6.1/core;../BSP/CherryUSB-1.6.1/osal;../BSP/CherryUSB-1.6.1/port/dwc2;../BSP/CherryUSB-1.6.1/class/cdc;../BSP/CherryUSB-1.6.1/class/msc;../BSP/CherryUSB-1.6.1/common;../BSP/CherryUSB_port;../BSP/SEGGER_RTT_V798a/RTT;../BSP/SEGGER_RTT_V798a/Config;../FATFS/Target;../FATFS/App;../Middlewares/Third_Party/FatFs/src</IncludePath>
+              <IncludePath>../Core/Inc;../App/FileTransfer;../App/Storage;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../BSP/ST7735;../BSP/CherryUSB-1.6.1/core;../BSP/CherryUSB-1.6.1/osal;../BSP/CherryUSB-1.6.1/port/dwc2;../BSP/CherryUSB-1.6.1/class/cdc;../BSP/CherryUSB-1.6.1/class/msc;../BSP/CherryUSB-1.6.1/common;../BSP/CherryUSB_port;../BSP/SEGGER_RTT_V798a/RTT;../BSP/SEGGER_RTT_V798a/Config;../FATFS/Target;../FATFS/App;../Middlewares/Third_Party/FatFs/src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -555,6 +555,26 @@
               <FileName>stm32h7xx_hal_timebase_tim.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/stm32h7xx_hal_timebase_tim.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/App/FileTransfer</GroupName>
+          <Files>
+            <File>
+              <FileName>file_rx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../App/FileTransfer/file_rx.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/App/Storage</GroupName>
+          <Files>
+            <File>
+              <FileName>sd_manager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../App/Storage/sd_manager.c</FilePath>
             </File>
           </Files>
         </Group>

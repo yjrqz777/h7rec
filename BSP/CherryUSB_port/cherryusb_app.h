@@ -27,6 +27,7 @@ void CherryUSB_DeviceInit(void);
  *         false — 设备尚未初始化完成
  */
 bool CherryUSB_DeviceIsReady(void);
+bool CherryUSB_CdcCanSend(void);
 
 /**
  * @brief  通过 CDC IN 端点发送数据

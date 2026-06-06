@@ -20,7 +20,8 @@
 #include "usbd_core.h"
 #include "usbd_cdc_acm.h"
 #include "cherryusb_app.h"
-
+#include "file_rx.h"
+#include "SEGGER_RTT.h"
 /* ======================== 总线与端点宏定义 ======================== */
 
 #define CHERRYUSB_BUSID 0     /* CherryUSB 总线 ID（单总线） */
@@ -245,9 +246,15 @@ static void cdc_bulk_out(uint8_t busid, uint8_t ep, uint32_t nbytes)
 
     if (nbytes != 0U) {
         /* 将接收到的数据转发给应用层处理 */
-        CherryUSB_CdcSend(cdc_rx_buffer, nbytes);
+        FileRx_OnUsbData(cdc_rx_buffer, nbytes);
     }
-
+    // SEGGER_RTT_printf(0, "[CDC OUT] Received %u bytes\r\n", nbytes);
+    /* rtt输出 接收到的数据 */
+    // SEGGER_RTT_WriteString(0, "[CDC OUT] Data: ");
+    // for (uint32_t i = 0; i < nbytes; i++) {
+    //     SEGGER_RTT_printf(0, "%02X ", cdc_rx_buffer[i]);
+    // }
+    // SEGGER_RTT_WriteString(0, "\r\n");
     /* 重新启动 OUT 接收，准备下一包数据 */
     usbd_ep_start_read(busid, CDC_OUT_EP, cdc_rx_buffer, sizeof(cdc_rx_buffer));
 }
@@ -344,6 +351,11 @@ bool CherryUSB_DeviceIsReady(void)
     return usb_device_ready;
 }
 
+bool CherryUSB_CdcCanSend(void)
+{
+    return cdc_configured && !cdc_tx_busy;
+}
+
 /**
  * @brief  通过 CDC IN 端点发送数据到主机
  *
@@ -370,5 +382,3 @@ void CherryUSB_CdcSend(const uint8_t *data, uint32_t len)
     cdc_tx_busy = true;
     usbd_ep_start_write(CHERRYUSB_BUSID, CDC_IN_EP, cdc_tx_buffer, len);
 }
-
-
