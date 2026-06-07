@@ -1,7 +1,52 @@
-# stm32h743IIKxs
+# H7REC
 
-STM32H743 工程，包含 FreeRTOS、ST7735 LCD、CherryUSB CDC 设备和 SEGGER RTT 调试输出。
+STM32H743 工程，基于 FreeRTOS，实现 USB CDC 文件传输到 SD 卡，并在 ST7735 LCD 上显示运行状态。
 
-## 文档
+## 主要功能
+
+- FreeRTOS 多任务运行
+- CherryUSB CDC 虚拟串口通信
+- PC 端脚本发送文件到 STM32
+- STM32 接收文件并保存到 SD 卡 `0:/rx`
+- 文件传输支持分块 ACK、块 CRC、整文件 CRC 校验
+- ST7735 LCD 显示时间、SD 状态和文件接收进度
+- SEGGER RTT 输出调试信息
+
+## 目录说明
+
+```text
+App/
+  FileTransfer/   USB CDC 文件接收与 SD 写入逻辑
+  Storage/        SD 卡初始化、挂载和容量查询
+BSP/
+  CherryUSB_port/ CherryUSB 移植代码
+  ST7735/         LCD 驱动与显示测试
+Core/             CubeMX 生成的主工程代码和 FreeRTOS 任务
+FATFS/            CubeMX 生成的 FatFs 应用层配置
+Middlewares/      FreeRTOS、FatFs 等第三方中间件
+tools/pc/         PC 端文件发送脚本
+doc/              项目记录和问题排查文档
+```
+
+## 文件发送
+
+安装 PC 端依赖：
+
+```bash
+pip install pyserial
+```
+
+发送文件：
+
+```bash
+python tools/pc/send_file.py COM7 H7REC.HEX
+```
+
+更多脚本参数见：
+
+- [tools/pc/README.md](tools/pc/README.md)
+
+## 相关文档
 
 - [STM32H743 移植 CherryUSB 与 SEGGER RTT 的问题排查记录](doc/cherryusb_rtt_qa_zh.md)
+- [CDC 文件传输到 SD 卡记录](doc/cdc_file_transfer_to_sd_zh.md)

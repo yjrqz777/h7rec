@@ -4,146 +4,301 @@
 #include "bsp_driver_sd.h"
 #include "cmsis_os.h"
 #include "fatfs.h"
+#include "sdmmc.h"
 
-#define SD_MANAGER_POLL_MS        50U
-#define SD_MANAGER_DEBOUNCE_COUNT 4U
-
-static uint8_t sd_present_stable;
-static uint8_t sd_present_candidate;
-static uint8_t sd_present_count;
+/*
+ * SD 管理策略：
+ * 1. 不再依赖插卡检测引脚，挂载成功才认为 SD 可用。
+ * 2. 初始化/挂载失败后只记录状态并定时重试，不让任务卡死。
+ * 3. 每次失败后复位 SDMMC/FatFs 状态，避免下次重试继承旧错误状态。
+ */
 static uint8_t sd_mounted;
-static uint32_t sd_last_poll_tick;
-static volatile uint8_t sd_inserted_event;
-static volatile uint8_t sd_removed_event;
+static SdManagerState sd_state;
+static uint32_t sd_next_mount_tick;
+static uint32_t sd_total_kb;
+static uint32_t sd_free_kb;
+static uint8_t sd_capacity_valid;
+static osMutexId_t sd_manager_lock;
+static const osMutexAttr_t sd_manager_lock_attr = {
+    .name = "sdManagerLock",
+    .attr_bits = osMutexPrioInherit
+};
 
-static uint8_t sd_present_raw(void)
+/**
+ * @brief  判断系统 tick 是否已经到达指定时间点
+ *
+ * 使用有符号差值比较，避免 osKernel tick 回绕时判断错误。
+ */
+static uint8_t sd_tick_due(uint32_t now, uint32_t due)
 {
-    return (BSP_SD_IsDetected() == SD_PRESENT) ? 1U : 0U;
+    /* 使用有符号差值判断 tick 是否到期，可兼容 osKernel tick 回绕。 */
+    return ((int32_t)(now - due) >= 0) ? 1U : 0U;
 }
 
+/**
+ * @brief  获取 SD 管理互斥锁
+ *
+ * FatFs/SDMMC 状态由本模块集中维护，挂载、卸载和容量更新需要串行执行。
+ */
+static void sd_lock(void)
+{
+    if (sd_manager_lock != NULL) {
+        (void)osMutexAcquire(sd_manager_lock, osWaitForever);
+    }
+}
+
+/**
+ * @brief  释放 SD 管理互斥锁
+ */
+static void sd_unlock(void)
+{
+    if (sd_manager_lock != NULL) {
+        (void)osMutexRelease(sd_manager_lock);
+    }
+}
+
+/**
+ * @brief  清空缓存的容量信息
+ *
+ * SD 未挂载或容量查询失败时调用，避免 LCD 显示旧容量。
+ */
+static void sd_clear_capacity(void)
+{
+    sd_total_kb = 0;
+    sd_free_kb = 0;
+    sd_capacity_valid = 0;
+}
+
+/**
+ * @brief  复位 FatFs 挂载关系和 SDMMC/HAL 驱动状态
+ *
+ * 初始化失败后底层句柄可能停在错误状态，复位后下一次挂载更干净。
+ */
+static void sd_reset_driver(void)
+{
+    /*
+     * SD 初始化失败后，HAL/SDMMC 句柄可能停在 BUSY/ERROR 状态。
+     * 这里主动卸载 FatFs、复位 SDMMC 外设并重新执行 CubeMX 生成的初始化，
+     * 让下一次 SdManager_Mount 从干净状态开始。
+     */
+    (void)f_mount(NULL, (TCHAR const *)SDPath, 1);
+    (void)HAL_SD_DeInit(&hsd1);
+    __HAL_RCC_SDMMC1_FORCE_RESET();
+    __HAL_RCC_SDMMC1_RELEASE_RESET();
+    HAL_NVIC_ClearPendingIRQ(SDMMC1_IRQn);
+    hsd1.State = HAL_SD_STATE_RESET;
+    hsd1.ErrorCode = HAL_SD_ERROR_NONE;
+    MX_SDMMC1_SD_Init();
+}
+
+/**
+ * @brief  查询并缓存 SD 总容量和剩余容量
+ *
+ * 仅在挂载成功后调用。容量以 KB 保存，供 LCD 和上层状态显示使用。
+ */
+static void sd_update_capacity(void)
+{
+    FRESULT res;
+    FATFS *fs;
+    DWORD fre_clust;
+
+    if (sd_mounted == 0U) {
+        sd_clear_capacity();
+        return;
+    }
+
+    res = f_getfree((TCHAR const *)SDPath, &fre_clust, &fs);
+    if (res == FR_OK) {
+        /* FatFs 容量单位是 cluster，csize 是每个 cluster 的 sector 数；512B sector 换算成 KB 需要 /2。 */
+        sd_total_kb = (uint32_t)((fs->n_fatent - 2U) * fs->csize / 2U);
+        sd_free_kb = (uint32_t)(fre_clust * fs->csize / 2U);
+        sd_capacity_valid = 1;
+        SEGGER_RTT_printf(0, "[SD] OK ! total=%u KB free=%u KB\r\n", sd_total_kb, sd_free_kb);
+    } else {
+        sd_clear_capacity();
+        SEGGER_RTT_printf(0, "[SD] f_getfree failed res=%d\r\n", res);
+    }
+}
+
+/**
+ * @brief  初始化 SD 管理器内部变量和互斥锁
+ */
 void SdManager_Init(void)
 {
-    uint8_t present;
-
-    present = sd_present_raw();
-    sd_present_stable = present;
-    sd_present_candidate = present;
-    sd_present_count = SD_MANAGER_DEBOUNCE_COUNT;
     sd_mounted = 0;
-    sd_last_poll_tick = 0;
-    sd_inserted_event = 0;
-    sd_removed_event = 0;
+    sd_state = SD_MANAGER_STATE_ABSENT;
+    sd_next_mount_tick = 0;
+    sd_clear_capacity();
+    sd_manager_lock = osMutexNew(&sd_manager_lock_attr);
 }
 
-SdManagerEvent SdManager_Poll(void)
-{
-    uint32_t now;
-    uint8_t present;
-
-    now = osKernelGetTickCount();
-    if ((now - sd_last_poll_tick) < SD_MANAGER_POLL_MS) {
-        return SD_MANAGER_EVENT_NONE;
-    }
-    sd_last_poll_tick = now;
-
-    present = sd_present_raw();
-    if (present != sd_present_candidate) {
-        sd_present_candidate = present;
-        sd_present_count = 1;
-        return SD_MANAGER_EVENT_NONE;
-    }
-
-    if (sd_present_count < SD_MANAGER_DEBOUNCE_COUNT) {
-        sd_present_count++;
-        return SD_MANAGER_EVENT_NONE;
-    }
-
-    if (present == sd_present_stable) {
-        return SD_MANAGER_EVENT_NONE;
-    }
-
-    sd_present_stable = present;
-    if (sd_present_stable != 0U) {
-        SEGGER_RTT_WriteString(0, "[SD] inserted\r\n");
-        sd_inserted_event = 1;
-        return SD_MANAGER_EVENT_INSERTED;
-    }
-
-    SEGGER_RTT_WriteString(0, "[SD] removed\r\n");
-    sd_removed_event = 1;
-    SdManager_Unmount();
-    return SD_MANAGER_EVENT_REMOVED;
-}
-
+/**
+ * @brief  SD 后台管理任务
+ *
+ * 未挂载时按 SD_MANAGER_RETRY_MS 周期重试挂载，失败不会阻塞其他任务。
+ */
 void SdManager_Task(void *argument)
 {
+    SdManagerStatus status;
+    uint32_t now;
+
     (void)argument;
 
+    osDelay(SD_MANAGER_STARTUP_DELAY_MS);
+    sd_next_mount_tick = osKernelGetTickCount();
+    SEGGER_RTT_WriteString(0, "[SD] manager start\r\n");
+
     for (;;) {
-        (void)SdManager_Poll();
-        osDelay(1);
+        now = osKernelGetTickCount();
+        if (sd_mounted == 0U && sd_tick_due(now, sd_next_mount_tick) != 0U) {
+            /* 挂载失败只安排下一次重试，不能在这里长时间阻塞其他任务。 */
+            status = SdManager_Mount();
+            if (status == SD_MANAGER_OK) {
+                sd_update_capacity();
+            } else {
+                sd_next_mount_tick = now + SD_MANAGER_RETRY_MS;
+            }
+        }
+
+        osDelay(50);
     }
 }
 
+/**
+ * @brief  初始化 SDMMC、挂载 FatFs，并更新 SD 状态
+ *
+ * @return SD_MANAGER_OK 成功；其他值表示初始化或挂载失败
+ */
 SdManagerStatus SdManager_Mount(void)
 {
     FRESULT res;
-    uint8_t sd_state;
+    uint8_t bsp_state;
+    SdManagerStatus status;
 
-    if (sd_present_stable == 0U || sd_present_raw() == 0U) {
-        return SD_MANAGER_ERR_ABSENT;
-    }
+    sd_lock();
 
     if (sd_mounted != 0U) {
-        return SD_MANAGER_OK;
+        sd_state = SD_MANAGER_STATE_MOUNTED;
+        status = SD_MANAGER_OK;
+        goto mount_done;
     }
 
-    sd_state = BSP_SD_Init();
-    if (sd_state != MSD_OK) {
-        SEGGER_RTT_printf(0, "[SD] init failed ret=%u\r\n", sd_state);
-        return SD_MANAGER_ERR_INIT;
+    sd_state = SD_MANAGER_STATE_INITING;
+    sd_reset_driver();
+    osDelay(SD_MANAGER_INIT_SETTLE_MS);
+    /* 当前硬件检测脚无效，所以直接尝试 BSP_SD_Init，用结果判断 SD 是否可用。 */
+    bsp_state = BSP_SD_Init();
+    if (bsp_state != MSD_OK) {
+        SEGGER_RTT_printf(0, "[SD] init failed ret=%u err=0x%08X state=%u detect=%u\r\n",
+                          bsp_state, (uint32_t)hsd1.ErrorCode, hsd1.State, BSP_SD_IsDetected());
+        sd_state = SD_MANAGER_STATE_ERR_INIT;
+        sd_clear_capacity();
+        sd_reset_driver();
+        status = SD_MANAGER_ERR_INIT;
+        goto mount_done;
     }
 
     res = f_mount(&SDFatFS, (TCHAR const *)SDPath, 1);
     if (res != FR_OK) {
         SEGGER_RTT_printf(0, "[SD] mount failed res=%d\r\n", res);
-        return SD_MANAGER_ERR_MOUNT;
+        sd_state = SD_MANAGER_STATE_ERR_MOUNT;
+        sd_clear_capacity();
+        sd_reset_driver();
+        status = SD_MANAGER_ERR_MOUNT;
+        goto mount_done;
     }
 
     sd_mounted = 1;
+    sd_state = SD_MANAGER_STATE_MOUNTED;
     SEGGER_RTT_WriteString(0, "[SD] mounted\r\n");
-    return SD_MANAGER_OK;
+    status = SD_MANAGER_OK;
+
+mount_done:
+    sd_unlock();
+    return status;
 }
 
+/**
+ * @brief  卸载 FatFs 并复位 SDMMC 驱动
+ */
 void SdManager_Unmount(void)
 {
+    sd_lock();
     if (sd_mounted != 0U) {
         (void)f_mount(NULL, (TCHAR const *)SDPath, 1);
         sd_mounted = 0;
+        sd_reset_driver();
         SEGGER_RTT_WriteString(0, "[SD] unmounted\r\n");
     }
+    sd_state = SD_MANAGER_STATE_ABSENT;
+    sd_clear_capacity();
+    sd_unlock();
 }
 
+/**
+ * @brief  查询 SD 是否在线
+ *
+ * 当前硬件检测脚无效，因此这里返回“是否已成功挂载”。
+ */
 uint8_t SdManager_IsPresent(void)
 {
-    return (sd_present_stable != 0U && sd_present_raw() != 0U) ? 1U : 0U;
+    /* 当前工程不依赖插卡检测脚：挂载成功即认为 SD 在线。 */
+    return sd_mounted;
 }
 
+/**
+ * @brief  查询 SD 是否已经挂载
+ */
 uint8_t SdManager_IsMounted(void)
 {
     return sd_mounted;
 }
 
-uint8_t SdManager_TakeInsertedEvent(void)
+/**
+ * @brief  获取 SD 管理器当前状态枚举
+ */
+SdManagerState SdManager_GetState(void)
 {
-    uint8_t event = sd_inserted_event;
-    sd_inserted_event = 0;
-    return event;
+    return sd_state;
 }
 
-uint8_t SdManager_TakeRemovedEvent(void)
+/**
+ * @brief  获取 SD 状态短文本
+ *
+ * 返回的字符串用于 LCD 显示，尽量保持短小。
+ */
+const char *SdManager_GetStateText(void)
 {
-    uint8_t event = sd_removed_event;
-    sd_removed_event = 0;
-    return event;
+    switch (sd_state) {
+    case SD_MANAGER_STATE_ABSENT:
+        return "No Card";
+    case SD_MANAGER_STATE_INITING:
+        return "Mounting";
+    case SD_MANAGER_STATE_MOUNTED:
+        return "Mounted";
+    case SD_MANAGER_STATE_ERR_INIT:
+        return "InitFail";
+    case SD_MANAGER_STATE_ERR_MOUNT:
+        return "MountFail";
+    default:
+        return "Unknown";
+    }
+}
+
+/**
+ * @brief  获取缓存的 SD 容量
+ *
+ * @return 1 容量有效；0 容量无效
+ */
+uint8_t SdManager_GetCapacity(uint32_t *total_kb, uint32_t *free_kb)
+{
+    if (total_kb != NULL) {
+        *total_kb = sd_total_kb;
+    }
+
+    if (free_kb != NULL) {
+        *free_kb = sd_free_kb;
+    }
+
+    return sd_capacity_valid;
 }

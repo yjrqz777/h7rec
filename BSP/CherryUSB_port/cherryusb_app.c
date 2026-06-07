@@ -233,7 +233,7 @@ static void usbd_event_handler(uint8_t busid, uint8_t event)
  * @brief  CDC 批量 OUT 端点完成回调（主机→设备）
  *
  * 当主机通过 CDC OUT 端点下发数据时触发：
- * 1. 若接收到有效数据，调用 CherryUSB_CdcSend() 转发到应用层
+ * 1. 若接收到有效数据，调用 FileRx_OnUsbData() 转发到文件传输模块
  * 2. 重新启动 OUT 端点接收，准备接收下一包数据
  *
  * @param  busid   总线 ID
@@ -245,7 +245,7 @@ static void cdc_bulk_out(uint8_t busid, uint8_t ep, uint32_t nbytes)
     (void)ep;
 
     if (nbytes != 0U) {
-        /* 将接收到的数据转发给应用层处理 */
+        /* 将接收到的数据转发给文件传输模块 */
         FileRx_OnUsbData(cdc_rx_buffer, nbytes);
     }
     // SEGGER_RTT_printf(0, "[CDC OUT] Received %u bytes\r\n", nbytes);
