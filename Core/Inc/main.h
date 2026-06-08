@@ -53,6 +53,7 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+void Fault_PrintInfo(const char *handler_name, uint32_t print_stack_regs);
 
 /* USER CODE END EFP */
 

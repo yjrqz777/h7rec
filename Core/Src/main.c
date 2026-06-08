@@ -77,6 +77,12 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+  SEGGER_RTT_Init();
+  uint32_t ccr = SCB->CCR;
+  SEGGER_RTT_printf(0, "CCR=0x%08lx D=%d I=%d\r\n",
+                    SCB->CCR,
+                    !!(SCB->CCR & SCB_CCR_DC_Msk),
+                    !!(SCB->CCR & SCB_CCR_IC_Msk));
 
   /* USER CODE END 1 */
 
@@ -89,7 +95,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  SEGGER_RTT_Init();
+  // SEGGER_RTT_Init();
   SEGGER_RTT_WriteString(0, "SEGGER Real-Time-Terminal Sample\r\n\r\n");
   SEGGER_RTT_WriteString(0, "###### Testing SEGGER_printf() ######\r\n");
   /* USER CODE END Init */
@@ -258,6 +264,13 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
+  Fault_PrintInfo("Error_Handler", 1U);
+
+  if ((CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk) != 0U)
+  {
+    __BKPT(0);
+  }
+
   while (1)
   {
   }

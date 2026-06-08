@@ -69,6 +69,70 @@ static void sd_clear_capacity(void)
     sd_capacity_valid = 0;
 }
 
+static void sd_dump_root_dir(void)
+{
+    FRESULT res;
+    DIR dir;
+    FILINFO file_info;
+    uint32_t entry_count = 0;
+    TCHAR const *RxPath = "0:/RX";
+
+    res = f_opendir(&dir, (TCHAR const *)RxPath);
+    if (res != FR_OK) {
+        SEGGER_RTT_printf(0, "[SD] root opendir failed res=%d path=%s\r\n", res, RxPath);
+        return;
+    }
+
+    for (;;) {
+        res = f_readdir(&dir, &file_info);
+        if (res != FR_OK) {
+            SEGGER_RTT_printf(0, "[SD] RX count readdir failed res=%d\r\n", res);
+            break;
+        }
+
+        if (file_info.fname[0] == '\0') {
+            break;
+        }
+
+        entry_count++;
+    }
+
+    SEGGER_RTT_printf(0, "[SD] RX file count=%u\r\n", entry_count);
+    if (entry_count == 0U) {
+        SEGGER_RTT_WriteString(0, "[SD]   <empty>\r\n");
+        (void)f_closedir(&dir);
+        return;
+    }
+
+    res = f_rewinddir(&dir);
+    if (res != FR_OK) {
+        SEGGER_RTT_printf(0, "[SD] RX rewinddir failed res=%d\r\n", res);
+        (void)f_closedir(&dir);
+        return;
+    }
+
+    SEGGER_RTT_WriteString(0, "[SD] RX files:\r\n");
+    for (;;) {
+        res = f_readdir(&dir, &file_info);
+        if (res != FR_OK) {
+            SEGGER_RTT_printf(0, "[SD] RX readdir failed res=%d\r\n", res);
+            break;
+        }
+
+        if (file_info.fname[0] == '\0') {
+            break;
+        }
+
+        if ((file_info.fattrib & AM_DIR) != 0U) {
+            SEGGER_RTT_printf(0, "[SD]   <DIR>  %s\r\n", file_info.fname);
+        } else {
+            SEGGER_RTT_printf(0, "  [SD]%10u bytes %s\r\n", (uint32_t)file_info.fsize, file_info.fname);
+        }
+    }
+
+    (void)f_closedir(&dir);
+}
+
 /**
  * @brief  复位 FatFs 挂载关系和 SDMMC/HAL 驱动状态
  *
@@ -114,6 +178,7 @@ static void sd_update_capacity(void)
         sd_free_kb = (uint32_t)(fre_clust * fs->csize / 2U);
         sd_capacity_valid = 1;
         SEGGER_RTT_printf(0, "[SD] OK ! total=%u KB free=%u KB\r\n", sd_total_kb, sd_free_kb);
+        sd_dump_root_dir();
     } else {
         sd_clear_capacity();
         SEGGER_RTT_printf(0, "[SD] f_getfree failed res=%d\r\n", res);

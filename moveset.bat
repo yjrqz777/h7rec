@@ -10,11 +10,11 @@ if not exist "%SRC_DIR%\" (
     exit /b 1
 )
 
-robocopy "%SRC_DIR%" "%DST_DIR%" /E /COPY:DAT /R:2 /W:1
+robocopy "%SRC_DIR%" "%DST_DIR%" /E /COPY:DAT /R:2 /W:1 /NFL /NDL /NJH /NJS /NP >nul
 if %ERRORLEVEL% GEQ 8 (
     echo Failed to copy "%SRC_DIR%" to "%DST_DIR%".
     exit /b %ERRORLEVEL%
 )
 
-echo Copied "%SRC_DIR%" to "%DST_DIR%".
+echo Copied .vscode settings.
 exit /b 0

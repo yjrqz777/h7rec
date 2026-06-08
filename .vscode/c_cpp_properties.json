@@ -112,7 +112,8 @@
                 "__yield()=",
                 "__vfp_status(x,y)=0"
             ],
-            "intelliSenseMode": "${default}"
+            "compilerPath": "",
+            "intelliSenseMode": "gcc-arm"
         }
     ],
     "version": 4
