@@ -20,13 +20,13 @@
  *   -> 校验块 CRC -> 写入 0:/rx/RX.TMP -> END 后校验整文件 CRC -> rename 为目标文件
  *
  * ACK 策略：
- *   每个 BLK 的 payload 完整接收、CRC 通过并写入 SD 后，才返回 ACK。
+ *   每个 block 的 payload 完整接收、CRC 通过并写入 SD 后，才返回 ACK。
  *   这样 PC 端不会跑得比 SD 写入更快，逻辑简单且不容易丢数据。
  */
 typedef enum {
     FILE_RX_STATE_IDLE = 0,      /* 等待 PUT 命令 */
-    FILE_RX_STATE_WAIT_BLOCK,    /* 文件已打开，等待 BLK 或 END 文本行 */
-    FILE_RX_STATE_RECV_PAYLOAD   /* 正在接收当前 BLK 的二进制 payload */
+    FILE_RX_STATE_WAIT_BLOCK,    /* 文件已打开，等待 block 或 END 文本行 */
+    FILE_RX_STATE_RECV_PAYLOAD   /* 正在接收当前 block 的二进制 payload */
 } FileRxState;
 
 typedef struct {
@@ -37,28 +37,28 @@ typedef struct {
     uint32_t received_size;       /* 已经写入并 ACK 的字节数 */
     uint32_t expected_crc;        /* PUT 中声明的整文件 CRC32 */
     uint32_t running_crc;         /* 接收过程中累积计算的整文件 CRC32 */
-    uint32_t block_index;         /* 下一个期望收到的 BLK 序号 */
-    uint32_t block_len;           /* 当前 BLK payload 长度 */
-    uint32_t block_received;      /* 当前 BLK 已收到的 payload 字节数 */
-    uint32_t block_expected_crc;  /* 当前 BLK 头部声明的 CRC32 */
+    uint32_t block_index;         /* 下一个期望收到的 block 序号 */
+    uint32_t block_len;           /* 当前 block payload 长度 */
+    uint32_t block_received;      /* 当前 block 已收到的 payload 字节数 */
+    uint32_t block_expected_crc;  /* 当前 block 头部声明的 CRC32 */
     char name[FILE_RX_NAME_SIZE];
     char final_path[FILE_RX_PATH_SIZE];
     char temp_path[FILE_RX_PATH_SIZE];
 } FileRxContext;
 
 /* CDC 回调可能在任务处理 SD 写入时继续进数据，因此先进入环形缓冲。 */
-static uint8_t file_rx_ring[FILE_RX_RING_SIZE];
-static volatile uint32_t file_rx_ring_head;
-static volatile uint32_t file_rx_ring_tail;
-static volatile uint8_t file_rx_ring_overflow;
+static uint8_t file_rx_ring[FILE_RX_RING_SIZE];              /* USB CDC OUT 回调写入、接收任务读取的环形缓冲区 */
+static volatile uint32_t file_rx_ring_head;                  /* 环形缓冲写入位置，由 USB CDC OUT 回调推进 */
+static volatile uint32_t file_rx_ring_tail;                  /* 环形缓冲读取位置，由 FileRx_Task 推进 */
+static volatile uint8_t file_rx_ring_overflow;               /* 环形缓冲写满标志，提示上层发生过输入丢失 */
 
-static FileRxContext rx;
-static char last_done_name[FILE_RX_NAME_SIZE];
-static uint8_t last_done_valid;
-static char line_buf[FILE_RX_LINE_SIZE];
-static uint32_t line_len;
-static uint32_t progress_last_report;
-ALIGN_32BYTES(static uint8_t block_buf[FILE_RX_CHUNK_SIZE]);
+static FileRxContext rx;                                     /* 当前文件接收会话的协议状态、路径、CRC 和 FatFs 文件句柄 */
+static char last_done_name[FILE_RX_NAME_SIZE];               /* 最近一次成功接收完成的文件名，用于状态显示/查询 */
+static uint8_t last_done_valid;                              /* last_done_name 是否有效 */
+static char line_buf[FILE_RX_LINE_SIZE];                     /* 文本命令行缓冲区，用于解析 PUT/block/END 等协议行 */
+static uint32_t line_len;                                    /* line_buf 当前已缓存的字符数 */
+static uint32_t progress_last_report;                        /* 上一次进度 RTT 输出的已接收字节数，用于限频 */
+ALIGN_32BYTES(static uint8_t block_buf[FILE_RX_CHUNK_SIZE]); /* 当前 block payload 缓冲区，32 字节对齐便于 SD/DMA/cache 处理 */
 
 /**
  * @brief  整理 LCD 状态字符串长度
@@ -598,9 +598,9 @@ static void handle_put_line(char *line)
 }
 
 /**
- * @brief  解析接收状态下收到的 BLK 或 END 文本行
+ * @brief  解析接收状态下收到的 block 或 END 文本行
  *
- * BLK 通过后切换到 FILE_RX_STATE_RECV_PAYLOAD，后续字节按二进制 payload 处理。
+ * block 通过后切换到 FILE_RX_STATE_RECV_PAYLOAD，后续字节按二进制 payload 处理。
  */
 static void handle_block_line(char *line)
 {
@@ -616,7 +616,7 @@ static void handle_block_line(char *line)
     }
 
     n = sscanf(line, "%7s %lu %lu %lx", cmd, &index, &len, &crc);
-    if (n != 4 || strcmp(cmd, "BLK") != 0) {
+    if (n != 4 || strcmp(cmd, "block") != 0) {
         fail_transfer("command");
         return;
     }
@@ -663,7 +663,7 @@ static void handle_line(char *line)
 }
 
 /**
- * @brief  处理当前 BLK 的一个 payload 字节
+ * @brief  处理当前 block 的一个 payload 字节
  *
  * payload 收满后执行块 CRC、SD 写入、整文件 CRC 累积和 ACK。
  */
@@ -719,7 +719,7 @@ static void handle_payload_byte(uint8_t byte)
 /**
  * @brief  协议字节流解析入口
  *
- * 文本状态下按行解析 PUT/BLK/END；payload 状态下直接收二进制数据。
+ * 文本状态下按行解析 PUT/block/END；payload 状态下直接收二进制数据。
  */
 static void handle_rx_byte(uint8_t byte)
 {
