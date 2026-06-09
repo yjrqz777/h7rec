@@ -6,6 +6,7 @@
                 "d:\\document\\code\\stm32\\H7\\h7rec\\Core\\Inc",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\App\\FileTransfer",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\App\\Storage",
+                "d:\\document\\code\\stm32\\H7\\h7rec\\App\\Runtime",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\Drivers\\STM32H7xx_HAL_Driver\\Inc",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\Drivers\\STM32H7xx_HAL_Driver\\Inc\\Legacy",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\Middlewares\\Third_Party\\FreeRTOS\\Source\\include",
