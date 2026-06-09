@@ -2,6 +2,14 @@
 
 STM32H743 工程，基于 FreeRTOS，实现 USB CDC 文件传输到 SD 卡，并在 ST7735 LCD 上显示运行状态。
 
+## Lib
+- [FreeRTOS](https://www.freertos.org/)
+- [CherryUSB@v1.6.1](https://github.com/cherry-embedded/CherryUSB)
+- [STM32H743iikx](https://www.st.com/en/microcontrollers-microprocessors/stm32h743ii.html)
+- [ST7735](https://www.bing.com/search?q=ST7735)
+- [LVGL@8.4.0](https://github.com/lvgl/lvgl)
+- [SEGGER-RTT@v7.98a](https://www.segger.com/products/debug-probes/j-link/technology/about-real-time-transfer/)
+
 ## 主要功能
 
 - FreeRTOS 多任务运行
