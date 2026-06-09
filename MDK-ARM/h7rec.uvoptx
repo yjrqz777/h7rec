@@ -380,7 +380,7 @@
 
   <Group>
     <GroupName>Application/User/App/FileTransfer</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1016,7 +1016,7 @@
 
   <Group>
     <GroupName>cherryusb</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1027,7 +1027,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\BSP\CherryUSB-1.6.1\core\usbd_core.c</PathWithFileName>
+      <PathWithFileName>..\External\CherryUSB-1.6.1\core\usbd_core.c</PathWithFileName>
       <FilenameWithoutPath>usbd_core.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1039,7 +1039,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\BSP\CherryUSB-1.6.1\class\cdc\usbd_cdc_acm.c</PathWithFileName>
+      <PathWithFileName>..\External\CherryUSB-1.6.1\class\cdc\usbd_cdc_acm.c</PathWithFileName>
       <FilenameWithoutPath>usbd_cdc_acm.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1051,7 +1051,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\BSP\CherryUSB-1.6.1\class\msc\usbd_msc.c</PathWithFileName>
+      <PathWithFileName>..\External\CherryUSB-1.6.1\class\msc\usbd_msc.c</PathWithFileName>
       <FilenameWithoutPath>usbd_msc.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1063,7 +1063,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\BSP\CherryUSB-1.6.1\port\dwc2\usb_dc_dwc2.c</PathWithFileName>
+      <PathWithFileName>..\External\CherryUSB-1.6.1\port\dwc2\usb_dc_dwc2.c</PathWithFileName>
       <FilenameWithoutPath>usb_dc_dwc2.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1075,7 +1075,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\BSP\CherryUSB-1.6.1\osal\usb_osal_freertos.c</PathWithFileName>
+      <PathWithFileName>..\External\CherryUSB-1.6.1\osal\usb_osal_freertos.c</PathWithFileName>
       <FilenameWithoutPath>usb_osal_freertos.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1108,7 +1108,7 @@
 
   <Group>
     <GroupName>SEGGER_RTT</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1119,7 +1119,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\BSP\SEGGER_RTT_V798a\RTT\SEGGER_RTT.c</PathWithFileName>
+      <PathWithFileName>..\External\SEGGER_RTT_V798a\RTT\SEGGER_RTT.c</PathWithFileName>
       <FilenameWithoutPath>SEGGER_RTT.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1131,7 +1131,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\BSP\SEGGER_RTT_V798a\RTT\SEGGER_RTT_printf.c</PathWithFileName>
+      <PathWithFileName>..\External\SEGGER_RTT_V798a\RTT\SEGGER_RTT_printf.c</PathWithFileName>
       <FilenameWithoutPath>SEGGER_RTT_printf.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>

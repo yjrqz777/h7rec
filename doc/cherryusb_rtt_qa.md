@@ -86,13 +86,13 @@ Also disabled unused template options such as MTP thread, RNDIS/ECM LWIP flags, 
 
 The Keil project was updated to include:
 
-- `BSP/SEGGER_RTT_V798a/RTT/SEGGER_RTT.c`
-- `BSP/SEGGER_RTT_V798a/RTT/SEGGER_RTT_printf.c`
+- `External/SEGGER_RTT_V798a/RTT/SEGGER_RTT.c`
+- `External/SEGGER_RTT_V798a/RTT/SEGGER_RTT_printf.c`
 
 Include paths added:
 
-- `BSP/SEGGER_RTT_V798a/RTT`
-- `BSP/SEGGER_RTT_V798a/Config`
+- `External/SEGGER_RTT_V798a/RTT`
+- `External/SEGGER_RTT_V798a/Config`
 
 `SEGGER_RTT_Syscalls_KEIL.c` was not kept in the project because it caused duplicate `_sys_*` symbols with Keil's `sys_io.o`.
 

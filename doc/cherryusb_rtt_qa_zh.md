@@ -172,13 +172,13 @@ osKernelStart();
 
 工程中加入了 SEGGER RTT：
 
-- `BSP/SEGGER_RTT_V798a/RTT/SEGGER_RTT.c`
-- `BSP/SEGGER_RTT_V798a/RTT/SEGGER_RTT_printf.c`
+- `External/SEGGER_RTT_V798a/RTT/SEGGER_RTT.c`
+- `External/SEGGER_RTT_V798a/RTT/SEGGER_RTT_printf.c`
 
 Keil include path 增加：
 
-- `BSP/SEGGER_RTT_V798a/RTT`
-- `BSP/SEGGER_RTT_V798a/Config`
+- `External/SEGGER_RTT_V798a/RTT`
+- `External/SEGGER_RTT_V798a/Config`
 
 CherryUSB 日志最终走：
 
