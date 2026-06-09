@@ -12,9 +12,11 @@
 
 /* ======================== SD 管理配置宏 ======================== */
 
-#define SD_MANAGER_STARTUP_DELAY_MS 1000U  /* 系统启动后延迟多久再开始第一次 SD 挂载 */
-#define SD_MANAGER_INIT_SETTLE_MS    50U   /* 复位 SDMMC 驱动后等待多久再调用 BSP_SD_Init */
+#define SD_MANAGER_STARTUP_DELAY_MS 0U     /* 系统启动后延迟多久再开始第一次 SD 挂载 */
+#define SD_MANAGER_INIT_SETTLE_MS    10U   /* 复位 SDMMC 驱动后等待多久再重新尝试挂载 */
 #define SD_MANAGER_RETRY_MS         2000U  /* 挂载失败后的后台重试周期 */
+#define SD_MANAGER_CAPACITY_DELAY_MS 200U  /* 挂载成功后延迟多久再查询容量，避免拖慢挂载返回 */
+#define SD_MANAGER_DUMP_RX_DIR_ON_MOUNT 0U /* 是否在挂载后遍历并打印 0:/RX 目录 */
 
 /**
  * @brief SD 挂载操作返回值

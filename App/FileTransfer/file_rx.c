@@ -616,7 +616,7 @@ static void handle_block_line(char *line)
     }
 
     n = sscanf(line, "%7s %lu %lu %lx", cmd, &index, &len, &crc);
-    if (n != 4 || strcmp(cmd, "block") != 0) {
+    if (n != 4 || strcmp(cmd, "BLK") != 0) {
         fail_transfer("command");
         return;
     }

@@ -65,48 +65,49 @@ void LCD_Test(void)
 	ST7735_LCD_Driver.Init(&st7735_pObj,ST7735_FORMAT_RBG565,&ST7735Ctx);
 	ST7735_LCD_Driver.ReadID(&st7735_pObj,&st7735_id);
 	
-	LCD_SetBrightness(0);
+	ST7735_FillRect(&st7735_pObj, 0, 0, ST7735Ctx.Width,ST7735Ctx.Height, BLACK);
+	// LCD_SetBrightness(0);
 	
-	#ifdef TFT96
-	extern unsigned char WeActStudiologo_160_80[];
-	ST7735_LCD_Driver.DrawBitmap(&st7735_pObj,0,0,WeActStudiologo_160_80);
-	#elif TFT18
-	extern unsigned char WeActStudiologo_128_160[];
-	ST7735_LCD_Driver.DrawBitmap(&st7735_pObj,0,0,WeActStudiologo_128_160);	
-	#endif
+	// #ifdef TFT96
+	// extern unsigned char WeActStudiologo_160_80[];
+	// ST7735_LCD_Driver.DrawBitmap(&st7735_pObj,0,0,WeActStudiologo_160_80);
+	// #elif TFT18
+	// extern unsigned char WeActStudiologo_128_160[];
+	// ST7735_LCD_Driver.DrawBitmap(&st7735_pObj,0,0,WeActStudiologo_128_160);	
+	// #endif
 	
-  uint32_t tick = get_tick();
-	while (HAL_GPIO_ReadPin(KEY_GPIO_Port, KEY_Pin) != GPIO_PIN_SET)
-	{
-		delay_ms(1);
+//   uint32_t tick = get_tick();
+// 	while (HAL_GPIO_ReadPin(KEY_GPIO_Port, KEY_Pin) != GPIO_PIN_SET)
+// 	{
+// 		delay_ms(1);
 
-		if (get_tick() - tick <= 100)
-			LCD_SetBrightness((get_tick() - tick) * 100 / 100);
-		else if (get_tick() - tick <= 300)
-		{
-			sprintf((char *)&text, "%03d", (get_tick() - tick - 100) / 10);
-			LCD_ShowString(ST7735Ctx.Width - 30, 1, ST7735Ctx.Width, 16, 16, text);
-			ST7735_LCD_Driver.FillRect(&st7735_pObj, 0, ST7735Ctx.Height - 3, (get_tick() - tick - 1000) * ST7735Ctx.Width / 2000, 3, 0xFFFF);
-		}
-		else if (get_tick() - tick > 300)
-			break;
-	}
-	while (HAL_GPIO_ReadPin(KEY_GPIO_Port, KEY_Pin) == GPIO_PIN_SET)
-	{
-		delay_ms(1);
-	}
-	LCD_Light(0, 300);
+// 		if (get_tick() - tick <= 100)
+// 			LCD_SetBrightness((get_tick() - tick) * 100 / 100);
+// 		else if (get_tick() - tick <= 300)
+// 		{
+// 			sprintf((char *)&text, "%03d", (get_tick() - tick - 100) / 10);
+// 			LCD_ShowString(ST7735Ctx.Width - 30, 1, ST7735Ctx.Width, 16, 16, text);
+// 			ST7735_LCD_Driver.FillRect(&st7735_pObj, 0, ST7735Ctx.Height - 3, (get_tick() - tick - 1000) * ST7735Ctx.Width / 2000, 3, 0xFFFF);
+// 		}
+// 		else if (get_tick() - tick > 300)
+// 			break;
+// 	}
+// 	while (HAL_GPIO_ReadPin(KEY_GPIO_Port, KEY_Pin) == GPIO_PIN_SET)
+// 	{
+// 		delay_ms(1);
+// 	}
+// 	LCD_Light(0, 300);
 
-	ST7735_LCD_Driver.FillRect(&st7735_pObj, 0, 0, ST7735Ctx.Width,ST7735Ctx.Height, BLACK);
+// 	ST7735_LCD_Driver.FillRect(&st7735_pObj, 0, 0, ST7735Ctx.Width,ST7735Ctx.Height, BLACK);
 
-	sprintf((char *)&text, "RX:Idle");
-	LCD_ShowString(4, 4, ST7735Ctx.Width, 12, 12, text);
-	sprintf((char *)&text, "STM32H7xx 0x%X", HAL_GetDEVID());
-	LCD_ShowString(4, 22, ST7735Ctx.Width, 16, 16, text);
-	sprintf((char *)&text, "LCD ID:0x%X", st7735_id);
-	LCD_ShowString(4, 40, ST7735Ctx.Width, 12, 12, text);
+// 	sprintf((char *)&text, "RX:Idle");
+// 	LCD_ShowString(4, 4, ST7735Ctx.Width, 12, 12, text);
+// 	sprintf((char *)&text, "STM32H7xx 0x%X", HAL_GetDEVID());
+// 	LCD_ShowString(4, 22, ST7735Ctx.Width, 16, 16, text);
+// 	sprintf((char *)&text, "LCD ID:0x%X", st7735_id);
+// 	LCD_ShowString(4, 40, ST7735Ctx.Width, 12, 12, text);
 
-	LCD_Light(100, 200);
+// 	LCD_Light(100, 200);
 }
 
 void LCD_SetBrightness(uint32_t Brightness)

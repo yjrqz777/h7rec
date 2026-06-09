@@ -513,14 +513,14 @@ DRESULT SD_write(BYTE lun, const BYTE *buff, DWORD sector, UINT count)
 
           if (event.status == osEventMessage)
           {
-            if (event.value.v == WRITE_CPLT_MSG)
+            if (event.value.v == READ_CPLT_MSG)
             {
               timer = osKernelSysTick();
               /* block until SDIO IP is ready or a timeout occur */
               while(osKernelSysTick() - timer <SD_TIMEOUT)
 #else
                 status = osMessageQueueGet(SDQueueID, (void *)&event, NULL, SD_TIMEOUT);
-              if ((status == osOK) && (event == WRITE_CPLT_MSG))
+              if ((status == osOK) && (event == READ_CPLT_MSG))
               {
                 timer = osKernelGetTickCount();
                 /* block until SDIO IP is ready or a timeout occur */

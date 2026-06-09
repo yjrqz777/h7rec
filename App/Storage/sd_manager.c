@@ -15,9 +15,12 @@
 static uint8_t sd_mounted;
 static SdManagerState sd_state;
 static uint32_t sd_next_mount_tick;
+static uint32_t sd_next_capacity_tick;
 static uint32_t sd_total_kb;
 static uint32_t sd_free_kb;
 static uint8_t sd_capacity_valid;
+static uint8_t sd_capacity_update_pending;
+static uint8_t sd_driver_reset_pending;
 static osMutexId_t sd_manager_lock;
 static const osMutexAttr_t sd_manager_lock_attr = {
     .name = "sdManagerLock",
@@ -69,6 +72,7 @@ static void sd_clear_capacity(void)
     sd_capacity_valid = 0;
 }
 
+#if SD_MANAGER_DUMP_RX_DIR_ON_MOUNT
 static void sd_dump_root_dir(void)
 {
     FRESULT res;
@@ -132,6 +136,7 @@ static void sd_dump_root_dir(void)
 
     (void)f_closedir(&dir);
 }
+#endif
 
 /**
  * @brief  复位 FatFs 挂载关系和 SDMMC/HAL 驱动状态
@@ -178,7 +183,9 @@ static void sd_update_capacity(void)
         sd_free_kb = (uint32_t)(fre_clust * fs->csize / 2U);
         sd_capacity_valid = 1;
         SEGGER_RTT_printf(0, "[SD] OK ! total=%u KB free=%u KB\r\n", sd_total_kb, sd_free_kb);
+#if SD_MANAGER_DUMP_RX_DIR_ON_MOUNT
         sd_dump_root_dir();
+#endif
     } else {
         sd_clear_capacity();
         SEGGER_RTT_printf(0, "[SD] f_getfree failed res=%d\r\n", res);
@@ -193,6 +200,9 @@ void SdManager_Init(void)
     sd_mounted = 0;
     sd_state = SD_MANAGER_STATE_ABSENT;
     sd_next_mount_tick = 0;
+    sd_next_capacity_tick = 0;
+    sd_capacity_update_pending = 0;
+    sd_driver_reset_pending = 0;
     sd_clear_capacity();
     sd_manager_lock = osMutexNew(&sd_manager_lock_attr);
 }
@@ -209,7 +219,9 @@ void SdManager_Task(void *argument)
 
     (void)argument;
 
+#if SD_MANAGER_STARTUP_DELAY_MS > 0U
     osDelay(SD_MANAGER_STARTUP_DELAY_MS);
+#endif
     sd_next_mount_tick = osKernelGetTickCount();
     SEGGER_RTT_WriteString(0, "[SD] manager start\r\n");
 
@@ -219,10 +231,16 @@ void SdManager_Task(void *argument)
             /* 挂载失败只安排下一次重试，不能在这里长时间阻塞其他任务。 */
             status = SdManager_Mount();
             if (status == SD_MANAGER_OK) {
-                sd_update_capacity();
+                sd_capacity_update_pending = 1;
+                sd_next_capacity_tick = osKernelGetTickCount() + SD_MANAGER_CAPACITY_DELAY_MS;
             } else {
                 sd_next_mount_tick = now + SD_MANAGER_RETRY_MS;
             }
+        } else if (sd_mounted != 0U &&
+                   sd_capacity_update_pending != 0U &&
+                   sd_tick_due(now, sd_next_capacity_tick) != 0U) {
+            sd_capacity_update_pending = 0;
+            sd_update_capacity();
         }
 
         osDelay(50);
@@ -249,32 +267,45 @@ SdManagerStatus SdManager_Mount(void)
     }
 
     sd_state = SD_MANAGER_STATE_INITING;
-    sd_reset_driver();
-    osDelay(SD_MANAGER_INIT_SETTLE_MS);
-    /* 当前硬件检测脚无效，所以直接尝试 BSP_SD_Init，用结果判断 SD 是否可用。 */
+    if (sd_driver_reset_pending != 0U) {
+        sd_reset_driver();
+        sd_driver_reset_pending = 0;
+        osDelay(SD_MANAGER_INIT_SETTLE_MS);
+    }
+    /*
+     * 当前 sd_diskio.c 定义了 DISABLE_SD_INIT，FatFs disk_initialize()
+     * 只检查卡状态，不会调用 BSP_SD_Init()，所以这里必须先完成 BSP 初始化。
+     */
     bsp_state = BSP_SD_Init();
     if (bsp_state != MSD_OK) {
         SEGGER_RTT_printf(0, "[SD] init failed ret=%u err=0x%08X state=%u detect=%u\r\n",
                           bsp_state, (uint32_t)hsd1.ErrorCode, hsd1.State, BSP_SD_IsDetected());
-        sd_state = SD_MANAGER_STATE_ERR_INIT;
         sd_clear_capacity();
-        sd_reset_driver();
+        sd_driver_reset_pending = 1;
+        sd_state = SD_MANAGER_STATE_ERR_INIT;
         status = SD_MANAGER_ERR_INIT;
         goto mount_done;
     }
 
     res = f_mount(&SDFatFS, (TCHAR const *)SDPath, 1);
     if (res != FR_OK) {
-        SEGGER_RTT_printf(0, "[SD] mount failed res=%d\r\n", res);
-        sd_state = SD_MANAGER_STATE_ERR_MOUNT;
+        SEGGER_RTT_printf(0, "[SD] mount failed res=%d err=0x%08X state=%u detect=%u\r\n",
+                          res, (uint32_t)hsd1.ErrorCode, hsd1.State, BSP_SD_IsDetected());
         sd_clear_capacity();
-        sd_reset_driver();
-        status = SD_MANAGER_ERR_MOUNT;
+        sd_driver_reset_pending = 1;
+        if (res == FR_NOT_READY || res == FR_DISK_ERR) {
+            sd_state = SD_MANAGER_STATE_ERR_INIT;
+            status = SD_MANAGER_ERR_INIT;
+        } else {
+            sd_state = SD_MANAGER_STATE_ERR_MOUNT;
+            status = SD_MANAGER_ERR_MOUNT;
+        }
         goto mount_done;
     }
 
     sd_mounted = 1;
     sd_state = SD_MANAGER_STATE_MOUNTED;
+    sd_driver_reset_pending = 0;
     SEGGER_RTT_WriteString(0, "[SD] mounted\r\n");
     status = SD_MANAGER_OK;
 
@@ -293,9 +324,11 @@ void SdManager_Unmount(void)
         (void)f_mount(NULL, (TCHAR const *)SDPath, 1);
         sd_mounted = 0;
         sd_reset_driver();
+        sd_driver_reset_pending = 0;
         SEGGER_RTT_WriteString(0, "[SD] unmounted\r\n");
     }
     sd_state = SD_MANAGER_STATE_ABSENT;
+    sd_capacity_update_pending = 0;
     sd_clear_capacity();
     sd_unlock();
 }
