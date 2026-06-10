@@ -12,6 +12,8 @@
 #include "lv_port_fs.h"
 #include "lvgl.h"
 #include "ff.h"    /*Include the header of your FS here*/
+#include <stdio.h>
+#include <string.h>
 /*********************
  *      DEFINES
  *********************/

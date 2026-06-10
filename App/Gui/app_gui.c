@@ -3,6 +3,9 @@
 #include "lvgl.h"
 #include "lv_port_disp.h"
 #include "lv_port_fs.h"
+
+#include "FreeRTOS.h"
+#include "cmsis_os2.h"
 // #include "cmsis_os.h"
 static void btn_event_cb(lv_event_t * e)
 {

@@ -1,7 +1,7 @@
 #include "file_rx.h"
 
 #include "FreeRTOS.h"
-#include "cmsis_os.h"
+#include "cmsis_os2.h"
 
 #include "SEGGER_RTT.h"
 #include "cherryusb_app.h"

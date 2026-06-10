@@ -3,6 +3,10 @@
 #include "spi.h"
 #include "tim.h"
 
+#include "FreeRTOS.h"
+#include "cmsis_os2.h"
+
+
 //SPI显示屏接口
 //LCD_RST
 #define LCD_RST_SET     HAL_GPIO_WritePin(LCD_RST_GPIO_Port,LCD_RST_Pin,GPIO_PIN_SET)
