@@ -2,14 +2,19 @@
 
 STM32H743 工程，基于 FreeRTOS，实现 USB CDC 文件传输到 SD 卡，并在 ST7735 LCD 上显示运行状态。
 
+使用 keil ac6 编译
+
 ## Lib
-- [FreeRTOS](https://www.freertos.org/)
+- [FreeRTOS](https://github.com/FreeRTOS/FreeRTOS-Kernel/releases/tag/V10.3.1-kernel-only)
 - [CherryUSB@v1.6.1](https://github.com/cherry-embedded/CherryUSB)
 - [STM32H743iikx](https://www.st.com/en/microcontrollers-microprocessors/stm32h743ii.html)
 - [ST7735](https://www.bing.com/search?q=ST7735)
 - [SEGGER-RTT@v7.98a](https://www.segger.com/products/debug-probes/j-link/technology/about-real-time-transfer/)
 - [LVGL@8.4.0](https://github.com/lvgl/lvgl)
 - [rlottie@V0.2](https://github.com/Samsung/rlottie)
+
+- 由于cubemx生成的FreeRTOS使用的 ac5 工具链的 portable 故而重新生成cubemx代码之后需要重新替换 ac6 所需的 portable
+- External\FreeRTOS-Kernel-10.3.1-kernel-only\portable\GCC\ARM_CM4F 覆盖 Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM4F
 
 ## 主要功能
 

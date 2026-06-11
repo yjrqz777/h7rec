@@ -528,7 +528,7 @@ VRle VRasterizer::rle()
 
 void VRasterizer::init()
 {
-    if (!d) d = std::make_shared<VRasterizerImpl>();
+    if (!d) d = std::shared_ptr<VRasterizerImpl>(new VRasterizerImpl());
 }
 
 void VRasterizer::updateRequest()

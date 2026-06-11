@@ -1,0 +1,1 @@
+xcopy "External\FreeRTOS-Kernel-10.3.1-kernel-only\portable\GCC\ARM_CM4F\*" "Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM4F\" /E /Y /I
