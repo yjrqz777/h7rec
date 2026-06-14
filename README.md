@@ -1,8 +1,9 @@
 # H7REC
 
-STM32H743 工程，基于 FreeRTOS，实现 USB CDC 文件传输到 SD 卡，并在 ST7735 LCD 上显示运行状态。
+STM32H743 工程，基于 FreeRTOS，实现 USB CDC 文件传输到 SD 卡，并在 ST7735 LCD 上显示运行状态。  
 
-使用 keil ac6 编译
+![product](doc/img/Product.jpg)  
+# 使用 keil ac6 编译
 
 ## Lib
 - [FreeRTOS](https://github.com/FreeRTOS/FreeRTOS-Kernel/releases/tag/V10.3.1-kernel-only)

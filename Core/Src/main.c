@@ -27,6 +27,7 @@
 #include "tim.h"
 #include "usb_otg.h"
 #include "gpio.h"
+#include "fmc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -66,7 +67,7 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+uint32_t Get_sdram_err = 0;
 /* USER CODE END 0 */
 
 /**
@@ -115,9 +116,13 @@ int main(void)
   // MX_USB_OTG_FS_PCD_Init();
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
+  MX_FMC_Init();
   /* USER CODE BEGIN 2 */
-	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);//启动PWM
-
+	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);// PWM
+  Get_sdram_err = SDRAM_SmokeTest(); // quick SDRAM test
+  SEGGER_RTT_printf(0, "SDRAM smoke test result: %s, code=%lu\r\n",
+                    Get_sdram_err == 0 ? "OK" : "ERROR",
+                    (unsigned long)Get_sdram_err);
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -227,6 +232,19 @@ void MPU_Config(void)
   MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
   MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
   MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+
+  HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+  /** Initializes and configures the Region and the memory to be protected
+  */
+  MPU_InitStruct.Number = MPU_REGION_NUMBER1;
+  MPU_InitStruct.BaseAddress = 0xC0000000;
+  MPU_InitStruct.Size = MPU_REGION_SIZE_32MB;
+  MPU_InitStruct.SubRegionDisable = 0x0;
+  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL1;
+  MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+  MPU_InitStruct.IsCacheable = MPU_ACCESS_CACHEABLE;
+  MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
   /* Enables the MPU */
