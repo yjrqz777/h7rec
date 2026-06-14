@@ -185,6 +185,37 @@ static void Fault_PrintAbfsr(uint32_t abfsr)
   }
 }
 
+static void Fault_PrintExceptionFrame(uint32_t *stack, uint32_t exc_return)
+{
+  if (stack == NULL)
+  {
+    return;
+  }
+
+  SEGGER_RTT_printf(0,
+                    "[FAULT] EXC_RETURN=0x%08X SP=0x%08X\r\n",
+                    exc_return,
+                    (uint32_t)stack);
+  SEGGER_RTT_printf(0,
+                    "[FAULT] R0=0x%08X R1=0x%08X R2=0x%08X R3=0x%08X\r\n",
+                    stack[0], stack[1], stack[2], stack[3]);
+  SEGGER_RTT_printf(0,
+                    "[FAULT] R12=0x%08X LR=0x%08X PC=0x%08X xPSR=0x%08X\r\n",
+                    stack[4], stack[5], stack[6], stack[7]);
+}
+
+void Fault_PrintInfo(const char *handler_name, uint32_t print_stack_regs);
+
+void HardFault_HandlerC(uint32_t *stack, uint32_t exc_return)
+{
+  Fault_PrintInfo("HardFault_Handler", 1U);
+  Fault_PrintExceptionFrame(stack, exc_return);
+
+  while (1)
+  {
+  }
+}
+
 void Fault_PrintInfo(const char *handler_name, uint32_t print_stack_regs)
 {
   uint32_t cfsr = SCB->CFSR;
@@ -265,17 +296,17 @@ void NMI_Handler(void)
 /**
   * @brief This function handles Hard fault interrupt.
   */
-void HardFault_Handler(void)
+__attribute__((naked)) void HardFault_Handler(void)
 {
-  /* USER CODE BEGIN HardFault_IRQn 0 */
-  Fault_PrintInfo("HardFault_Handler", 1U);
-
-  /* USER CODE END HardFault_IRQn 0 */
-  while (1)
-  {
-    /* USER CODE BEGIN W1_HardFault_IRQn 0 */
-    /* USER CODE END W1_HardFault_IRQn 0 */
-  }
+  __asm volatile
+  (
+    "tst lr, #4                             \n"
+    "ite eq                                 \n"
+    "mrseq r0, msp                          \n"
+    "mrsne r0, psp                          \n"
+    "mov r1, lr                             \n"
+    "b HardFault_HandlerC                   \n"
+  );
 }
 
 /**

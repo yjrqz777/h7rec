@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_PWR_LDO_SUPPLY,USE_HAL_DRIVER,STM32H743xx,LV_CONF_INCLUDE_SIMPLE,LV_LVGL_H_INCLUDE_SIMPLE</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../App/FileTransfer;../App/Storage;../App/Runtime;../App/Gui;../App/Gui/LvglPort;../External/lvgl-8.4.0;../External/lvgl-8.4.0/src;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../BSP/ST7735;../External/CherryUSB-1.6.1/core;../External/CherryUSB-1.6.1/osal;../External/CherryUSB-1.6.1/port/dwc2;../External/CherryUSB-1.6.1/class/cdc;../External/CherryUSB-1.6.1/class/msc;../External/CherryUSB-1.6.1/common;../BSP/CherryUSB_port;../External/SEGGER_RTT_V798a/RTT;../External/SEGGER_RTT_V798a/Config;../FATFS/Target;../FATFS/App;../Middlewares/Third_Party/FatFs/src</IncludePath>
+              <IncludePath>../Core/Inc;../App/FileTransfer;../App/Storage;../App/Runtime;../App/Gui;../App/Gui/LvglPort;../External/lvgl-8.4.0;../External/lvgl-8.4.0/src;../build/rlottie-armclang-m7-install/include;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../BSP/ST7735;../External/CherryUSB-1.6.1/core;../External/CherryUSB-1.6.1/osal;../External/CherryUSB-1.6.1/port/dwc2;../External/CherryUSB-1.6.1/class/cdc;../External/CherryUSB-1.6.1/class/msc;../External/CherryUSB-1.6.1/common;../BSP/CherryUSB_port;../External/SEGGER_RTT_V798a/RTT;../External/SEGGER_RTT_V798a/Config;../FATFS/Target;../FATFS/App;../Middlewares/Third_Party/FatFs/src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -372,8 +372,8 @@
             <DataAddressRange></DataAddressRange>
             <pXoBase></pXoBase>
             <ScatterFile></ScatterFile>
-            <IncludeLibs></IncludeLibs>
-            <IncludeLibsPath></IncludeLibsPath>
+            <IncludeLibs>rlottie.lib</IncludeLibs>
+            <IncludeLibsPath>../build/rlottie-armclang-m7-install/lib</IncludeLibsPath>
             <Misc></Misc>
             <LinkerInputFile></LinkerInputFile>
             <DisabledWarnings></DisabledWarnings>
@@ -642,6 +642,11 @@
               <FileType>1</FileType>
               <FilePath>../App/Runtime/app_runtime.c</FilePath>
             </File>
+            <File>
+              <FileName>no_semihosting.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\App\Runtime\no_semihosting.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -651,6 +656,11 @@
               <FileName>app_gui.c</FileName>
               <FileType>1</FileType>
               <FilePath>../App/Gui/app_gui.c</FilePath>
+            </File>
+            <File>
+              <FileName>rlottie.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>..\build\rlottie-armclang-m7-install\lib\rlottie.lib</FilePath>
             </File>
           </Files>
         </Group>

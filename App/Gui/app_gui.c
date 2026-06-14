@@ -3,6 +3,7 @@
 #include "lvgl.h"
 #include "lv_port_disp.h"
 #include "lv_port_fs.h"
+#include "extra/libs/rlottie/lv_rlottie.h"
 
 #include "FreeRTOS.h"
 #include "cmsis_os2.h"
@@ -36,6 +37,36 @@ void lv_example_get_started_1(void)
     lv_obj_center(label);
 }
 
+
+#if LV_USE_RLOTTIE
+#define RLOTTIE_DEMO_SIZE 80
+
+static const char rlottie_demo_json[] =
+    "{\"v\":\"5.5.7\",\"fr\":15,\"ip\":0,\"op\":30,\"w\":80,\"h\":80,"
+    "\"nm\":\"h7rec-dot\",\"ddd\":0,\"assets\":[],\"layers\":[{\"ddd\":0,"
+    "\"ind\":1,\"ty\":4,\"nm\":\"dot\",\"sr\":1,\"ks\":{\"o\":{\"a\":0,\"k\":100},"
+    "\"r\":{\"a\":0,\"k\":0},\"p\":{\"a\":1,\"k\":[{\"t\":0,\"s\":[20,40,0],"
+    "\"e\":[60,40,0],\"i\":{\"x\":[0.833],\"y\":[0.833]},\"o\":{\"x\":[0.167],"
+    "\"y\":[0.167]}},{\"t\":15,\"s\":[60,40,0],\"e\":[20,40,0],\"i\":{\"x\":[0.833],"
+    "\"y\":[0.833]},\"o\":{\"x\":[0.167],\"y\":[0.167]}},{\"t\":30,\"s\":[20,40,0]}]},"
+    "\"a\":{\"a\":0,\"k\":[0,0,0]},\"s\":{\"a\":0,\"k\":[100,100,100]}},\"ao\":0,"
+    "\"shapes\":[{\"ty\":\"gr\",\"it\":[{\"d\":1,\"ty\":\"el\",\"s\":{\"a\":0,\"k\":[24,24]},"
+    "\"p\":{\"a\":0,\"k\":[0,0]},\"nm\":\"ellipse\"},{\"ty\":\"fl\",\"c\":{\"a\":0,"
+    "\"k\":[0.1,0.6,1,1]},\"o\":{\"a\":0,\"k\":100},\"r\":1,\"nm\":\"fill\"},"
+    "{\"ty\":\"tr\",\"p\":{\"a\":0,\"k\":[0,0]},\"a\":{\"a\":0,\"k\":[0,0]},"
+    "\"s\":{\"a\":0,\"k\":[100,100]},\"r\":{\"a\":0,\"k\":0},\"o\":{\"a\":0,\"k\":100}}],"
+    "\"nm\":\"dot-group\"}],\"ip\":0,\"op\":30,\"st\":0,\"bm\":0}],\"markers\":[]}";
+
+static void ShowRlottieRawAnim(void)
+{
+    lv_obj_t * lottie = lv_rlottie_create_from_raw(lv_scr_act(),
+                                                   RLOTTIE_DEMO_SIZE,
+                                                   RLOTTIE_DEMO_SIZE,
+                                                   rlottie_demo_json);
+    lv_obj_center(lottie);
+    lv_rlottie_set_play_mode(lottie, LV_RLOTTIE_CTRL_PLAY | LV_RLOTTIE_CTRL_LOOP);
+}
+#endif
 
 static void gif_zoom_anim_cb(void * obj, int32_t zoom)
 {
@@ -78,7 +109,11 @@ void AppGui_Task(void *argument)
     lv_port_fs_init();
 
     // lv_example_get_started_1();
+#if LV_USE_RLOTTIE
+    ShowRlottieRawAnim();
+#else
     ShowGifZoomAnim();
+#endif
 
     for (;;) {
         lv_task_handler();
