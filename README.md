@@ -13,6 +13,7 @@ STM32H743 工程，基于 FreeRTOS，实现 USB CDC 文件传输到 SD 卡，并
 - [SEGGER-RTT@v7.98a](https://www.segger.com/products/debug-probes/j-link/technology/about-real-time-transfer/)
 - [LVGL@8.4.0](https://github.com/lvgl/lvgl)
 - [rlottie@V0.2](https://github.com/Samsung/rlottie)
+- [SDRAM-IS42S32800](https://item.szlcsc.com/3226381.html)
 
 - 由于cubemx生成的FreeRTOS使用的 ac5 工具链的 portable 故而重新生成cubemx代码之后需要重新替换 ac6 所需的 portable
 - External\FreeRTOS-Kernel-10.3.1-kernel-only\portable\GCC\ARM_CM4F 覆盖 Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM4F
@@ -27,6 +28,7 @@ STM32H743 工程，基于 FreeRTOS，实现 USB CDC 文件传输到 SD 卡，并
 - ST7735 LCD 显示时间、SD 状态和文件接收进度
 - LVGL 8.4.0 移植与基础显示测试
 - SEGGER RTT 输出调试信息
+- SDRAM-IS42S32800 移植
 
 ## 目录说明
 
