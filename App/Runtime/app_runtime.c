@@ -42,7 +42,7 @@ static const osThreadAttr_t sdManagerTask_attributes = {
 
 static const osThreadAttr_t uiTask_attributes = {
   .name = "uiTask",
-  .stack_size = 1024 * 6,
+  .stack_size = 1024 * 32,
   .priority = (osPriority_t) osPriorityLow,
 };
 
@@ -58,17 +58,31 @@ static void RTC_CalendarShow(RTC_DateTypeDef *sdatestructureget, RTC_TimeTypeDef
  */
 void AppRuntime_CreateTasks(void)
 {
+  osThreadId_t thread_id;
+
   /* Create application-owned worker tasks after the CubeMX default task exists. */
   SdManager_Init();
-  (void)osThreadNew(SdManager_Task, NULL, &sdManagerTask_attributes);
+  thread_id = osThreadNew(SdManager_Task, NULL, &sdManagerTask_attributes);
+  if (thread_id == NULL) {
+    SEGGER_RTT_WriteString(0, "[RTOS] create sdManagerTask failed\r\n");
+  }
 
   FileRx_Init();
-  (void)osThreadNew(FileRx_Task, NULL, &fileRxTask_attributes);
+  thread_id = osThreadNew(FileRx_Task, NULL, &fileRxTask_attributes);
+  if (thread_id == NULL) {
+    SEGGER_RTT_WriteString(0, "[RTOS] create fileRxTask failed\r\n");
+  }
 
-  (void)osThreadNew(AppGui_Task, NULL, &uiTask_attributes);
+  thread_id = osThreadNew(AppGui_Task, NULL, &uiTask_attributes);
+  if (thread_id == NULL) {
+    SEGGER_RTT_WriteString(0, "[RTOS] create uiTask failed\r\n");
+  }
 
 #if CHERRYUSB_AUTO_START
-  (void)osThreadNew(StartUsbTask, NULL, &usbTask_attributes);
+  thread_id = osThreadNew(StartUsbTask, NULL, &usbTask_attributes);
+  if (thread_id == NULL) {
+    SEGGER_RTT_WriteString(0, "[RTOS] create usbTask failed\r\n");
+  }
 #endif
 }
 
