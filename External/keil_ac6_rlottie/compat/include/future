@@ -1,0 +1,88 @@
+#ifndef AC6_RLOTTIE_COMPAT_FUTURE
+#define AC6_RLOTTIE_COMPAT_FUTURE
+
+#include <memory>
+#include <utility>
+
+namespace std {
+
+template <typename T>
+class future;
+
+template <typename T>
+class promise {
+public:
+    promise() : state_(std::make_shared<state>()) {}
+    promise(promise &&) = default;
+    promise &operator=(promise &&) = default;
+
+    promise(const promise &) = delete;
+    promise &operator=(const promise &) = delete;
+
+    future<T> get_future();
+
+    void set_value(const T &value)
+    {
+        state_->value = value;
+        state_->ready = true;
+    }
+
+    void set_value(T &&value)
+    {
+        state_->value = std::move(value);
+        state_->ready = true;
+    }
+
+private:
+    struct state {
+        bool ready{false};
+        T value{};
+    };
+
+    std::shared_ptr<state> state_;
+
+    friend class future<T>;
+};
+
+template <typename T>
+class future {
+public:
+    future() = default;
+    future(future &&) = default;
+    future &operator=(future &&) = default;
+
+    future(const future &) = delete;
+    future &operator=(const future &) = delete;
+
+    bool valid() const { return static_cast<bool>(state_); }
+
+    T get()
+    {
+        T value{};
+        if (state_) {
+            value = std::move(state_->value);
+            state_.reset();
+        }
+        return value;
+    }
+
+private:
+    using state = typename promise<T>::state;
+
+    explicit future(std::shared_ptr<state> state) : state_(std::move(state)) {}
+
+    std::shared_ptr<state> state_;
+
+    friend class promise<T>;
+};
+
+template <typename T>
+future<T> promise<T>::get_future()
+{
+    return future<T>(state_);
+}
+
+} // namespace std
+
+#endif
+

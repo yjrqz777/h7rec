@@ -1,0 +1,6 @@
+Name: rlottie
+Description: A rlottie library
+Version: 0.2
+Requires:
+Libs: -Llib -lrlottie
+Cflags: -ID:/document/code/stm32/H7/h7rec/External/keil_ac6_rlottie/install/include

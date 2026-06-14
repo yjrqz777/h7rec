@@ -1,0 +1,27 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "keil-ac6-m7",
+      "displayName": "Keil AC6 Cortex-M7",
+      "description": "Configure rlottie for STM32H743/Cortex-M7 with Keil ArmClang, Ninja, a local build directory, and install output under install/.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "toolchainFile": "${sourceDir}/armclang-cortex-m7.cmake",
+      "cacheVariables": {
+        "ARMCLANG_BIN": "D:/App/Keil/Keil_v5/ARM/ARMCLANG/bin",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/install",
+        "CMAKE_POLICY_VERSION_MINIMUM": "3.5"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "keil-ac6-m7",
+      "description": "Build the already configured Keil AC6 Cortex-M7 rlottie static library.",
+      "configurePreset": "keil-ac6-m7"
+    }
+  ]
+}
+

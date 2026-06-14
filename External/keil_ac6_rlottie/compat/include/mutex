@@ -1,0 +1,72 @@
+#ifndef AC6_RLOTTIE_COMPAT_MUTEX
+#define AC6_RLOTTIE_COMPAT_MUTEX
+
+namespace std {
+
+struct try_to_lock_t {
+    explicit try_to_lock_t() = default;
+};
+
+static constexpr try_to_lock_t try_to_lock{};
+
+class mutex {
+public:
+    void lock() {}
+    bool try_lock() { return true; }
+    void unlock() {}
+};
+
+template <typename Mutex>
+class lock_guard {
+public:
+    explicit lock_guard(Mutex &m) : mutex_(m) { mutex_.lock(); }
+    ~lock_guard() { mutex_.unlock(); }
+
+    lock_guard(const lock_guard &) = delete;
+    lock_guard &operator=(const lock_guard &) = delete;
+
+private:
+    Mutex &mutex_;
+};
+
+template <typename Mutex>
+class unique_lock {
+public:
+    explicit unique_lock(Mutex &m) : mutex_(&m), owns_(true) { mutex_->lock(); }
+    unique_lock(Mutex &m, try_to_lock_t) : mutex_(&m), owns_(m.try_lock()) {}
+    ~unique_lock()
+    {
+        if (owns_ && mutex_) {
+            mutex_->unlock();
+        }
+    }
+
+    unique_lock(const unique_lock &) = delete;
+    unique_lock &operator=(const unique_lock &) = delete;
+
+    bool owns_lock() const { return owns_; }
+    explicit operator bool() const { return owns_; }
+    void lock()
+    {
+        if (mutex_ && !owns_) {
+            mutex_->lock();
+            owns_ = true;
+        }
+    }
+    void unlock()
+    {
+        if (mutex_ && owns_) {
+            mutex_->unlock();
+            owns_ = false;
+        }
+    }
+
+private:
+    Mutex *mutex_{nullptr};
+    bool owns_{false};
+};
+
+} // namespace std
+
+#endif
+

@@ -1,0 +1,18 @@
+#ifndef AC6_RLOTTIE_COMPAT_CONDITION_VARIABLE
+#define AC6_RLOTTIE_COMPAT_CONDITION_VARIABLE
+
+#include <mutex>
+
+namespace std {
+
+class condition_variable {
+public:
+    void notify_one() {}
+
+    template <typename Lock>
+    void wait(Lock &) {}
+};
+
+} // namespace std
+
+#endif

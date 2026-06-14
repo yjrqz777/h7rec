@@ -15,6 +15,7 @@ endif()
 #declare target
 add_library( rlottie )
 set_target_properties( rlottie PROPERTIES DEFINE_SYMBOL RLOTTIE_BUILD )
+set_target_properties( rlottie PROPERTIES PREFIX "" SUFFIX ".lib" )
 
 #declare version of the target
 set(player_version_major 0)
@@ -32,6 +33,7 @@ option(LOTTIE_MODULE "Enable LOTTIE MODULE SUPPORT" ON)
 option(LOTTIE_THREAD "Enable LOTTIE THREAD SUPPORT" ON)
 option(LOTTIE_CACHE "Enable LOTTIE CACHE SUPPORT" ON)
 option(LOTTIE_TEST "Build LOTTIE AUTOTESTS" OFF)
+option(LOTTIE_EXAMPLE "Build LOTTIE EXAMPLES" ON)
 option(LOTTIE_CCACHE "Enable LOTTIE ccache SUPPORT" OFF)
 option(LOTTIE_ASAN "Compile with asan" OFF)
 
@@ -85,7 +87,7 @@ target_link_libraries(rlottie
 if (NOT APPLE AND NOT WIN32)
     target_link_libraries(rlottie
                         PRIVATE
-                            "-Wl,--version-script=${CMAKE_SOURCE_DIR}/rlottie.expmap"
+                            "-Wl,--version-script=${CMAKE_CURRENT_LIST_DIR}/rlottie.expmap"
                           )
 endif()
 
@@ -131,7 +133,9 @@ endif (NOT LIB_INSTALL_DIR)
 #declare source and include files
 add_subdirectory(inc)
 add_subdirectory(src)
-add_subdirectory(example)
+if (LOTTIE_EXAMPLE)
+    add_subdirectory(example)
+endif()
 
 if (LOTTIE_TEST)
     enable_testing()
@@ -195,4 +199,3 @@ export(EXPORT rlottie-targets FILE ${CMAKE_CURRENT_BINARY_DIR}/rlottieTargets.cm
 
 #Register package in user's package registry
 export(PACKAGE rlottie)
-

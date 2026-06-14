@@ -19,7 +19,6 @@ target_sources(rlottie
         "${CMAKE_CURRENT_LIST_DIR}/vpathmesure.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/vmatrix.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/velapsedtimer.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/vdebug.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/vinterpolator.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/vbezier.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/vraster.cpp"
@@ -27,6 +26,13 @@ target_sources(rlottie
         "${CMAKE_CURRENT_LIST_DIR}/vimageloader.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/varenaalloc.cpp"
     )
+
+if (NOT AC6_RLOTTIE_NO_THREAD_LIBCXX)
+    target_sources(rlottie
+        PRIVATE
+            "${CMAKE_CURRENT_LIST_DIR}/vdebug.cpp"
+        )
+endif()
 
 target_include_directories(rlottie
     PRIVATE

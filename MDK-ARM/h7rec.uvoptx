@@ -455,8 +455,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\App\Runtime\no_semihosting.c</PathWithFileName>
-      <FilenameWithoutPath>no_semihosting.c</FilenameWithoutPath>
+      <PathWithFileName>..\External\keil_ac6_rlottie\keil\keil_ac6_retarget.c</PathWithFileName>
+      <FilenameWithoutPath>keil_ac6_retarget.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -487,7 +487,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\build\rlottie-armclang-m7-install\lib\rlottie.lib</PathWithFileName>
+      <PathWithFileName>..\External\keil_ac6_rlottie\install\lib\rlottie.lib</PathWithFileName>
       <FilenameWithoutPath>rlottie.lib</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
