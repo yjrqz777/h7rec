@@ -72,6 +72,34 @@ static void sd_clear_capacity(void)
     sd_capacity_valid = 0;
 }
 
+static const char *sd_dma_addr_region(const void *addr)
+{
+    uint32_t value = (uint32_t)addr;
+
+    if (value >= 0x20000000U && value < 0x20020000U) {
+        return "DTCM";
+    }
+    if (value >= 0x24000000U && value < 0x24080000U) {
+        return "AXI";
+    }
+    if (value >= 0x30000000U && value < 0x30048000U) {
+        return "SRAM_D2";
+    }
+    if (value >= 0xC0000000U && value < 0xC2000000U) {
+        return "SDRAM";
+    }
+
+    return "OTHER";
+}
+
+static void sd_log_dma_context(void)
+{
+    SEGGER_RTT_printf(0, "[SD] dma ctx SDFatFS=0x%08X(%s) win=0x%08X(%s) SDPath=0x%08X(%s)\r\n",
+                      (uint32_t)&SDFatFS, sd_dma_addr_region(&SDFatFS),
+                      (uint32_t)&SDFatFS.win[0], sd_dma_addr_region(&SDFatFS.win[0]),
+                      (uint32_t)SDPath, sd_dma_addr_region(SDPath));
+}
+
 #if SD_MANAGER_DUMP_RX_DIR_ON_MOUNT
 static void sd_dump_root_dir(void)
 {
@@ -286,6 +314,8 @@ SdManagerStatus SdManager_Mount(void)
         status = SD_MANAGER_ERR_INIT;
         goto mount_done;
     }
+
+    sd_log_dma_context();
 
     res = f_mount(&SDFatFS, (TCHAR const *)SDPath, 1);
     if (res != FR_OK) {

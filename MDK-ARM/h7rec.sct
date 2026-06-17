@@ -1,0 +1,27 @@
+LR_IROM1 0x08000000 0x00200000  {    ; load region size_region
+  ER_IROM1 0x08000000 0x00200000  {  ; load address = execution address
+   *.o (RESET, +First)
+   *(InRoot$$Sections)
+   .ANY (+RO)
+   .ANY (+XO)
+  }
+
+  RW_DTCM 0x20000000 0x0001C000  {   ; DTCM: CPU-only fast data, no DMA buffers
+   *(.dtcm_data*)
+  }
+
+  RW_DTCM_STACK 0x2001C000 0x00004000  { ; startup main stack in DTCM
+   startup_stm32h743xx.o (STACK)
+  }
+
+  RW_AXI 0x24000000 0x00060000  {    ; AXI SRAM: default RW/ZI data, DMA-safe
+   *(.noncacheable*)
+   *(.axi_dma*)
+   .ANY (+RW +ZI)
+  }
+
+  RW_AXI_HEAP 0x24060000 0x00020000  { ; startup C/C++ heap in AXI
+   startup_stm32h743xx.o (HEAP)
+  }
+}
+
