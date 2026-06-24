@@ -1,27 +1,235 @@
-LR_IROM1 0x08000000 0x00200000  {    ; load region size_region
-  ER_IROM1 0x08000000 0x00200000  {  ; load address = execution address
+; Scatter-loading file for STM32H743.
+;
+; This file tells armlink where every input section is loaded from and where it
+; executes at run time. The whole image is loaded from internal Flash, while RAM
+; execution regions are copied or zero-initialized by the C runtime before main().
+;
+; Keep this file synchronized with:
+;   Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h
+;   MDK-ARM/startup_stm32h743xx.s
+;
+; ---------------------------------------------------------------------------------------------------
+; Address map, high addresses at the top and low addresses at the bottom
+; ---------------------------------------------------------------------------------------------------
+;
+; The STM32H743 RAM is split into several physical memory blocks. Separators
+; marked "-----" show boundaries between different blocks. Cortex-M stacks grow
+; toward lower addresses, so the main stack is placed at the high end of DTCM.
+; ITCM, DTCM, AXI, and AHB labels show the main bus or TCM type used to access
+; each memory block.
+;
+;   high address
+;      ^
+;      |
+;   0x38800FFF  +----------------+
+;               | D3 BKPSRAM 4KB |
+;               | .bkpsram*      |
+;   0x38800000  +----------------+
+;               ------------------
+;   0x3800FFFF  +----------------+
+;               | D3 SRAM 64KB   |
+;               | AHB SRAM       |
+;               | .d3_sram*      |
+;   0x38000000  +----------------+
+;               ------------------
+;   0x30047FFF  +----------------+
+;               | D2 SRAM 288KB  |
+;               | AHB address    |
+;               | .d2_sram*      |
+;               | DMA/peripheral |
+;   0x30000000  +----------------+
+;               ------------------
+;   0x2407FFFF  +----------------+
+;               | AXI SRAM       |
+;               | HEAP 128KB     |
+;   0x24060000  +----------------+
+;   0x2405FFFF  | AXI SRAM       |
+;               | RW/ZI data     |
+;               | .noncacheable  |
+;               | 384KB          |
+;   0x24000000  +----------------+
+;               ------------------
+;   0x2001FFFF  +----------------+
+;               | DTCM RAM       |
+;               | STACK 16KB     |
+;               | grows downward |
+;   0x2001C000  +----------------+
+;   0x2001BFFF  | DTCM RAM       |
+;               | reserved DTCM  |
+;               | .dtcm_data*    |
+;               | CPU-only data  |
+;   0x20000000  +----------------+
+;               ------------------
+;   0x10047FFF  +----------------+
+;               | D2 SRAM alias  |
+;               | AXI address    |
+;               | same D2 SRAM   |
+;   0x10000000  +----------------+
+;               ------------------
+;   0x081FFFFF  +----------------+
+;               | AXI Flash      |
+;               | ER_IROM1       |
+;               | RESET vectors  |
+;               | code           |
+;               | const data     |
+;               | XO code        |
+;               | max 2MB        |
+;   0x08000000  +----------------+
+;               ------------------
+;   0x0000FFFF  +----------------+
+;               | ITCM RAM 64KB  |
+;               | .itcm_text*    |
+;               | hot code       |
+;   0x00000000  +----------------+
+;      |
+;      v
+;   low address
+;
+; ---------------------------------------------------------------------------------------------------
+; STM32H743 memory map used by this project
+; ---------------------------------------------------------------------------------------------------
+;
+; Flash, D1 domain:
+;   D1_AXIFLASH_BASE  0x08000000  0x00200000  2MB embedded Flash
+;     Used for vector table, code, const data, and the load image for RAM data.
+;     Bank 1 is 0x08000000-0x080FFFFF, bank 2 is 0x08100000-0x081FFFFF.
+;
+; Tightly-coupled memory, D1 domain:
+;   D1_ITCMRAM_BASE   0x00000000  0x00010000   64KB ITCM RAM
+;     Instruction TCM. Best for extremely hot code that must execute with very
+;     low latency. Code placed here consumes Flash load space and ITCM run space.
+;
+;   D1_DTCMRAM_BASE   0x20000000  0x00020000  128KB DTCM RAM
+;     Data TCM. Very fast for the Cortex-M7 core, but many DMA masters cannot
+;     access it. Do not put USB, SDMMC, ETH, DMA, or peripheral buffers here.
+;     This project reserves the upper 16KB of DTCM for the startup/main stack.
+;
+;   D1_AXISRAM_BASE   0x24000000  0x00080000  512KB AXI SRAM
+;     Main general-purpose SRAM in this project. It is reachable by the CPU and
+;     by DMA-capable bus masters, so default RW/ZI data and USB buffers live here.
+;     This file splits it into:
+;       0x24000000-0x2405FFFF  384KB  default RW/ZI and .noncacheable*
+;       0x24060000-0x2407FFFF  128KB  C/C++ heap from startup_stm32h743xx.s
+;
+; D2/D3 SRAM:
+;   D2_AXISRAM_BASE   0x10000000  0x00048000  288KB D2 SRAM alias
+;   D2_AHBSRAM_BASE   0x30000000  0x00048000  288KB D2 SRAM AHB address
+;     D2 SRAM is useful for explicit DMA buffers or data shared with peripherals.
+;     If a peripheral expects the AHB address, prefer the 0x30000000 alias.
+;
+;   D3_SRAM_BASE      0x38000000  0x00010000   64KB D3 SRAM
+;     Useful for low-power or domain-specific data when the firmware explicitly
+;     manages that placement. The current project does not place data here by
+;     default.
+;
+;   D3_BKPSRAM_BASE   0x38800000  0x00001000    4KB Backup SRAM
+;     Can retain data across some resets or standby modes only when backup power
+;     and backup-domain access are configured correctly in firmware.
+;
+; ---------------------------------------------------------------------------------------------------
+; Active section naming convention
+; ---------------------------------------------------------------------------------------------------
+;
+;   .noncacheable*
+;     USB/DMA objects that should be grouped in AXI SRAM. The name alone does
+;     not disable the CPU data cache. If DCache is enabled, an MPU region or
+;     explicit cache maintenance is still required for true coherency.
+;
+; ---------------------------------------------------------------------------------------------------
+; Optional section names for future use
+; ---------------------------------------------------------------------------------------------------
+;
+;   .itcm_text*       code copied from Flash and executed from ITCM
+;   .dtcm_data*       CPU-only fast data in DTCM
+;   .axi_dma*         explicit AXI SRAM DMA buffers
+;   .d2_sram*         explicit D2 SRAM objects
+;   .d3_sram*         explicit D3 SRAM objects
+;   .bkpsram*         backup SRAM objects
+;
+; Add the matching execution region at the end of this file when one of these
+; optional sections is first used. Leaving unused selectors active makes armlink
+; emit L6314W warnings, so the examples are kept commented out.
+
+LR_IROM1 0x08000000 0x00200000  {       ; Load region: whole image stored in Flash
+
+  ; Flash execution region.
+  ;
+  ; RESET must be first because the vector table starts at the image base. The
+  ; Cortex-M7 fetches the initial SP and Reset_Handler from this table after
+  ; reset. InRoot$$Sections keeps runtime sections that the C library needs
+  ; during initialization. The remaining RO and XO sections are code and const
+  ; data that execute directly from Flash.
+  ER_IROM1 0x08000000 0x00200000  {
    *.o (RESET, +First)
    *(InRoot$$Sections)
    .ANY (+RO)
    .ANY (+XO)
   }
 
-  RW_DTCM 0x20000000 0x0001C000  {   ; DTCM: CPU-only fast data, no DMA buffers
-   *(.dtcm_data*)
-  }
-
-  RW_DTCM_STACK 0x2001C000 0x00004000  { ; startup main stack in DTCM
+  ; Startup/main stack in the upper 16KB of DTCM.
+  ;
+  ; The size must match Stack_Size in startup_stm32h743xx.s. DTCM is a good
+  ; place for the main stack because it is low-latency and CPU-only stack data
+  ; does not need peripheral DMA access.
+  ;
+  ; DTCM range used here:
+  ;   0x2001C000-0x2001FFFF  16KB STACK
+  RW_DTCM_STACK 0x2001C000 0x00004000  {
    startup_stm32h743xx.o (STACK)
   }
 
-  RW_AXI 0x24000000 0x00060000  {    ; AXI SRAM: default RW/ZI data, DMA-safe
+  ; Main AXI SRAM data region.
+  ;
+  ; .noncacheable* is listed before .ANY so explicitly tagged USB/DMA objects
+  ; are grouped at the start of AXI SRAM instead of being scattered among other
+  ; RW/ZI data. .ANY (+RW +ZI) then catches all normal initialized and zero-
+  ; initialized globals that were not matched earlier.
+  ;
+  ; AXI range used here:
+  ;   0x24000000-0x2405FFFF  384KB RW/ZI data and .noncacheable*
+  RW_AXI 0x24000000 0x00060000  {
    *(.noncacheable*)
-   *(.axi_dma*)
    .ANY (+RW +ZI)
   }
 
-  RW_AXI_HEAP 0x24060000 0x00020000  { ; startup C/C++ heap in AXI
+  ; C/C++ heap in the upper 128KB of AXI SRAM.
+  ;
+  ; The size must match Heap_Size in startup_stm32h743xx.s. Keeping the heap in
+  ; a separate execution region makes map-file usage easier to read and prevents
+  ; .ANY from consuming the reserved heap space.
+  ;
+  ; AXI range used here:
+  ;   0x24060000-0x2407FFFF  128KB HEAP
+  RW_AXI_HEAP 0x24060000 0x00020000  {
    startup_stm32h743xx.o (HEAP)
   }
-}
 
+; Example optional execution regions:
+;
+; Enable only when the corresponding input section exists in the project. For C
+; code compiled by ARMClang, one typical declaration style is:
+;   __attribute__((section(".dtcm_data"))) uint8_t fast_buffer[1024];
+;
+; For DMA buffers, prefer AXI or D2 SRAM and verify cache policy. DTCM is fast
+; for the CPU but is usually the wrong place for peripheral DMA.
+;
+;  ER_ITCM 0x00000000 0x00010000  {      ; 64KB ITCM, optional hot code
+;   *(.itcm_text*)
+;  }
+;
+;  RW_DTCM 0x20000000 0x0001C000  {      ; 112KB DTCM, CPU-only fast data
+;   *(.dtcm_data*)
+;  }
+;
+;  RW_D2_SRAM 0x30000000 0x00048000  {   ; 288KB D2 SRAM via AHB address
+;   *(.d2_sram*)
+;  }
+;
+;  RW_D3_SRAM 0x38000000 0x00010000  {   ; 64KB D3 SRAM
+;   *(.d3_sram*)
+;  }
+;
+;  RW_BKPSRAM 0x38800000 0x00001000  {   ; 4KB backup SRAM
+;   *(.bkpsram*)
+;  }
+}
