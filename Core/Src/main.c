@@ -19,13 +19,15 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "dcmi.h"
+#include "dma.h"
 #include "fatfs.h"
+#include "i2c.h"
 #include "memorymap.h"
 #include "rtc.h"
 #include "sdmmc.h"
 #include "spi.h"
 #include "tim.h"
-#include "usb_otg.h"
 #include "gpio.h"
 #include "fmc.h"
 
@@ -110,13 +112,15 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_RTC_Init();
   MX_SPI2_Init();
   MX_TIM2_Init();
-  // MX_USB_OTG_FS_PCD_Init();
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
   MX_FMC_Init();
+  MX_DCMI_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);// PWM
   Get_sdram_err = SDRAM_SmokeTest(); // quick SDRAM test
@@ -204,6 +208,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+  HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSE, RCC_MCODIV_1);
 }
 
 /* USER CODE BEGIN 4 */

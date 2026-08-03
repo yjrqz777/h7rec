@@ -58,6 +58,14 @@ void Fault_PrintInfo(const char *handler_name, uint32_t print_stack_regs);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define CAM_LED_IR_Pin GPIO_PIN_2
+#define CAM_LED_IR_GPIO_Port GPIOE
+#define CAM_PWDN_Pin GPIO_PIN_7
+#define CAM_PWDN_GPIO_Port GPIOD
+#define CAM_RST_Pin GPIO_PIN_10
+#define CAM_RST_GPIO_Port GPIOA
+#define CAM_XCLK_Pin GPIO_PIN_8
+#define CAM_XCLK_GPIO_Port GPIOA
 #define RGB_R_Pin GPIO_PIN_0
 #define RGB_R_GPIO_Port GPIOC
 #define RGB_G_Pin GPIO_PIN_1
