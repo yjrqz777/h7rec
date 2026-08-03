@@ -11,7 +11,9 @@
 #include "app_gui.h"
 #include "cherryusb_app.h"
 #include "file_rx.h"
+#include "i2c.h"
 #include "lcd.h"
+#include "ov7725m12.h"
 #include "rtc.h"
 #include "sd_manager.h"
 #include "SEGGER_RTT.h"
@@ -98,10 +100,26 @@ void AppRuntime_DefaultTask(void *argument)
   uint8_t text[32];
   char last_rx_text[32] = {0};
   uint32_t lcd_last_update = 0;
+  OV7725M12_ID_t camera_id;
+  OV7725M12_Status_t camera_status;
   RTC_DateTypeDef sdatestructureget;
   RTC_TimeTypeDef stimestructureget;
 
   (void)argument;
+
+  camera_status = OV7725M12_Probe(&hi2c1, &camera_id);
+  if (camera_status == OV7725M12_STATUS_OK) {
+    SEGGER_RTT_printf(0, "[CAM] OV7725 detected: PID=0x%02X VER=0x%02X\r\n",
+                      camera_id.pid,
+                      camera_id.version);
+  } else {
+    SEGGER_RTT_printf(0,
+                      "[CAM] OV7725 probe failed: status=%d PID=0x%02X VER=0x%02X I2C=0x%08lX\r\n",
+                      (int)camera_status,
+                      camera_id.pid,
+                      camera_id.version,
+                      (unsigned long)HAL_I2C_GetError(&hi2c1));
+  }
 
   LCD_Test();
 
