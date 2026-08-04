@@ -20,6 +20,7 @@
                 "d:\\document\\code\\stm32\\H7\\h7rec\\Drivers\\CMSIS\\Device\\ST\\STM32H7xx\\Include",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\Drivers\\CMSIS\\Include",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\BSP\\ST7735",
+                "d:\\document\\code\\stm32\\H7\\h7rec\\BSP\\ov7725m12",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\External\\CherryUSB-1.6.1\\core",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\External\\CherryUSB-1.6.1\\osal",
                 "d:\\document\\code\\stm32\\H7\\h7rec\\External\\CherryUSB-1.6.1\\port\\dwc2",
