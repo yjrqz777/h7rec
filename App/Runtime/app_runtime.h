@@ -8,7 +8,7 @@ extern "C" {
 /**
  * @brief Create application worker tasks.
  *
- * Creates the SD manager, file receiver, and optional CherryUSB startup task.
+ * Creates the SD manager, file receiver, GUI, camera, and optional USB task.
  * Call this from MX_FREERTOS_Init() after the CubeMX default task is created.
  */
 void AppRuntime_CreateTasks(void);
@@ -17,8 +17,8 @@ void AppRuntime_CreateTasks(void);
  * @brief Run the default application task loop.
  * @param argument CMSIS-RTOS task argument, currently unused.
  *
- * Initializes the LCD and periodically refreshes file receive, RTC time, and
- * SD card status text on the display. This function does not return.
+ * The worker tasks own the active application functions; this task remains as
+ * the CubeMX-compatible idle entry point and does not return.
  */
 void AppRuntime_DefaultTask(void *argument);
 

@@ -1,4 +1,5 @@
 #include "app_gui.h"
+#include "app_camera.h"
 #include "lcd.h"
 #include "lvgl.h"
 #include "lv_port_disp.h"
@@ -908,18 +909,10 @@ void AppGui_Task(void *argument)
     lv_port_disp_init();
     lv_port_fs_init();
 
-    // lv_example_get_started_1();
-#if LV_USE_RLOTTIE
-    if(ShowRlottieSdAnim() == 0U) {
-        osDelay(1000);
-        lv_obj_clean(lv_scr_act());
-        ShowRlottieRawAnim();
-    }
-#else
-    ShowGifZoomAnim();
-#endif
+    AppCamera_GuiInit();
 
     for (;;) {
+        AppCamera_GuiProcess();
         lv_task_handler();
         osDelay(5);
     }
