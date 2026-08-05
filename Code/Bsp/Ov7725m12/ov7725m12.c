@@ -1,3 +1,8 @@
+/**
+ * @file ov7725m12.c
+ * @brief 实现 OV7725M12 的 SCCB 配置、DCMI 单帧采集和 Cache 一致性处理。
+ */
+
 #include "ov7725m12.h"
 
 #include "fmc.h"
@@ -35,9 +40,9 @@ typedef struct
 } OV7725M12_RegisterValue_t;
 
 /*
- * QVGA RGB565 baseline adapted from HuffieWang/STM32F4-DCMI-OV7725.
- * COM10 remains 0x00 for non-inverted HREF and pixel clock outputs.
- * COM3 remains 0x00 for canonical RGB565 without mirror or red/blue swap.
+ * QVGA RGB565 基础配置改编自 HuffieWang/STM32F4-DCMI-OV7725。
+ * COM10 保持 0x00，使 HREF 和像素时钟按非反相方式输出。
+ * COM3 保持 0x00，输出不镜像且不交换红蓝通道的标准 RGB565 数据。
  */
 static const OV7725M12_RegisterValue_t qvga_rgb565_registers[] =
 {
@@ -129,12 +134,19 @@ static OV7725M12_Status_t OV7725M12_VerifyRegister(I2C_HandleTypeDef *hi2c,
                                                     uint8_t *failed_reg);
 static void OV7725M12_PrepareFrameForDma(void);
 
+/**
+ * @brief 通过 PWDN 和 RESET 引脚使摄像头进入掉电复位状态。
+ */
 void OV7725M12_PowerDown(void)
 {
   HAL_GPIO_WritePin(CAM_RST_GPIO_Port, CAM_RST_Pin, GPIO_PIN_RESET);
   HAL_GPIO_WritePin(CAM_PWDN_GPIO_Port, CAM_PWDN_Pin, GPIO_PIN_SET);
 }
 
+/**
+ * @brief 按硬件时序退出掉电状态并释放摄像头复位。
+ * @note 函数内部使用 HAL_Delay()，只能在系统时基可用后调用。
+ */
 void OV7725M12_ResetAndWake(void)
 {
   OV7725M12_PowerDown();
@@ -147,6 +159,15 @@ void OV7725M12_ResetAndWake(void)
   HAL_Delay(OV7725M12_RESET_DELAY_MS);
 }
 
+/**
+ * @brief 通过 SCCB 读取一个摄像头寄存器。
+ * @param[in] hi2c 指向已初始化的 I2C 句柄。
+ * @param[in] reg 待读取的寄存器地址。
+ * @param[out] value 用于返回寄存器值的指针。
+ * @retval OV7725M12_STATUS_OK 读取成功。
+ * @retval OV7725M12_STATUS_BAD_ARGUMENT 输入指针为空。
+ * @retval OV7725M12_STATUS_BUS_ERROR SCCB/I2C 传输失败。
+ */
 OV7725M12_Status_t OV7725M12_ReadRegister(I2C_HandleTypeDef *hi2c,
                                            uint8_t reg,
                                            uint8_t *value)
@@ -158,7 +179,7 @@ OV7725M12_Status_t OV7725M12_ReadRegister(I2C_HandleTypeDef *hi2c,
     return OV7725M12_STATUS_BAD_ARGUMENT;
   }
 
-  /* SCCB reads use separate write-address and read-data phases with a STOP. */
+  /* SCCB 读取必须将写寄存器地址和读数据拆成两个带 STOP 的独立阶段。 */
   hal_status = HAL_I2C_Master_Transmit(hi2c,
                                        OV7725M12_I2C_HAL_ADDRESS,
                                        &reg,
@@ -182,6 +203,15 @@ OV7725M12_Status_t OV7725M12_ReadRegister(I2C_HandleTypeDef *hi2c,
   return OV7725M12_STATUS_OK;
 }
 
+/**
+ * @brief 通过 SCCB 写入一个摄像头寄存器。
+ * @param[in] hi2c 指向已初始化的 I2C 句柄。
+ * @param[in] reg 待写入的寄存器地址。
+ * @param[in] value 待写入的寄存器值。
+ * @retval OV7725M12_STATUS_OK 写入成功。
+ * @retval OV7725M12_STATUS_BAD_ARGUMENT I2C 句柄为空。
+ * @retval OV7725M12_STATUS_BUS_ERROR SCCB/I2C 传输失败。
+ */
 OV7725M12_Status_t OV7725M12_WriteRegister(I2C_HandleTypeDef *hi2c,
                                             uint8_t reg,
                                             uint8_t value)
@@ -208,6 +238,15 @@ OV7725M12_Status_t OV7725M12_WriteRegister(I2C_HandleTypeDef *hi2c,
   return OV7725M12_STATUS_OK;
 }
 
+/**
+ * @brief 复位摄像头并读取芯片标识以确认设备型号。
+ * @param[in] hi2c 指向已初始化的 I2C 句柄。
+ * @param[out] id 用于返回产品和版本标识的结构体指针。
+ * @retval OV7725M12_STATUS_OK 检测到期望的 OV7725M12。
+ * @retval OV7725M12_STATUS_BAD_ARGUMENT 输入指针为空。
+ * @retval OV7725M12_STATUS_BUS_ERROR 芯片标识读取失败。
+ * @retval OV7725M12_STATUS_ID_MISMATCH 芯片标识与期望值不一致。
+ */
 OV7725M12_Status_t OV7725M12_Probe(I2C_HandleTypeDef *hi2c,
                                     OV7725M12_ID_t *id)
 {
@@ -246,6 +285,15 @@ OV7725M12_Status_t OV7725M12_Probe(I2C_HandleTypeDef *hi2c,
   return OV7725M12_STATUS_OK;
 }
 
+/**
+ * @brief 将摄像头配置为 QVGA RGB565 输出并回读关键寄存器。
+ * @param[in] hi2c 指向已初始化的 I2C 句柄。
+ * @param[out] failed_reg 可选输出指针，用于返回失败的寄存器地址。
+ * @retval OV7725M12_STATUS_OK 全部寄存器配置和校验成功。
+ * @retval OV7725M12_STATUS_BAD_ARGUMENT I2C 句柄为空。
+ * @retval OV7725M12_STATUS_BUS_ERROR 寄存器读写失败。
+ * @retval OV7725M12_STATUS_VERIFY_ERROR 关键寄存器回读校验失败。
+ */
 OV7725M12_Status_t OV7725M12_ConfigureQVGA_RGB565(I2C_HandleTypeDef *hi2c,
                                                    uint8_t *failed_reg)
 {
@@ -345,12 +393,25 @@ OV7725M12_Status_t OV7725M12_ConfigureQVGA_RGB565(I2C_HandleTypeDef *hi2c,
                                    failed_reg);
 }
 
+/**
+ * @brief 同时启用或关闭传感器和 DSP 两级彩条发生器。
+ * @param[in] hi2c 指向已初始化的 I2C 句柄。
+ * @param[in] enable 非零值表示启用彩条，零表示关闭彩条。
+ * @return 驱动操作结果。
+ */
 OV7725M12_Status_t OV7725M12_SetColorBar(I2C_HandleTypeDef *hi2c,
                                           uint8_t enable)
 {
   return OV7725M12_SetColorBarStages(hi2c, enable, enable);
 }
 
+/**
+ * @brief 分别配置传感器和 DSP 两级彩条发生器并回读校验。
+ * @param[in] hi2c 指向已初始化的 I2C 句柄。
+ * @param[in] sensor_enable 非零值表示启用传感器彩条。
+ * @param[in] dsp_enable 非零值表示启用 DSP 彩条。
+ * @return 驱动操作结果；第二级写入或校验失败时会尝试恢复原寄存器值。
+ */
 OV7725M12_Status_t OV7725M12_SetColorBarStages(I2C_HandleTypeDef *hi2c,
                                                 uint8_t sensor_enable,
                                                 uint8_t dsp_enable)
@@ -443,6 +504,14 @@ OV7725M12_Status_t OV7725M12_SetColorBarStages(I2C_HandleTypeDef *hi2c,
   return OV7725M12_STATUS_OK;
 }
 
+/**
+ * @brief 回读一个寄存器并与期望值比较。
+ * @param[in] hi2c 指向已初始化的 I2C 句柄。
+ * @param[in] reg 待校验的寄存器地址。
+ * @param[in] expected 期望的寄存器值。
+ * @param[out] failed_reg 可选输出指针，用于记录失败的寄存器地址。
+ * @return 驱动操作结果。
+ */
 static OV7725M12_Status_t OV7725M12_VerifyRegister(I2C_HandleTypeDef *hi2c,
                                                     uint8_t reg,
                                                     uint8_t expected,
@@ -473,6 +542,13 @@ static OV7725M12_Status_t OV7725M12_VerifyRegister(I2C_HandleTypeDef *hi2c,
   return OV7725M12_STATUS_OK;
 }
 
+/**
+ * @brief 启动一次 DCMI 快照模式 DMA 采集。
+ * @param[in,out] hdcmi 指向已初始化且已关联 DMA 的 DCMI 句柄。
+ * @return HAL 操作状态。
+ * @note 帧缓冲区位于 SDRAM，地址必须按 32 字节 Cache Line 对齐。
+ * @warning 采集进行期间不得由 CPU 修改帧缓冲区。
+ */
 HAL_StatusTypeDef OV7725M12_StartSnapshot(DCMI_HandleTypeDef *hdcmi)
 {
   HAL_StatusTypeDef hal_status;
@@ -520,6 +596,11 @@ HAL_StatusTypeDef OV7725M12_StartSnapshot(DCMI_HandleTypeDef *hdcmi)
   return hal_status;
 }
 
+/**
+ * @brief 停止当前 DCMI 采集并将驱动状态恢复为空闲。
+ * @param[in,out] hdcmi 指向当前使用的 DCMI 句柄。
+ * @return HAL 操作状态。
+ */
 HAL_StatusTypeDef OV7725M12_StopSnapshot(DCMI_HandleTypeDef *hdcmi)
 {
   HAL_StatusTypeDef hal_status;
@@ -536,6 +617,11 @@ HAL_StatusTypeDef OV7725M12_StopSnapshot(DCMI_HandleTypeDef *hdcmi)
   return hal_status;
 }
 
+/**
+ * @brief 获取当前采集状态和最近一次 DCMI 错误码。
+ * @param[out] dcmi_error 可选输出指针，用于返回最近一次采集错误码。
+ * @return 当前单帧采集状态。
+ */
 OV7725M12_CaptureState_t OV7725M12_GetCaptureState(uint32_t *dcmi_error)
 {
   OV7725M12_CaptureState_t state = capture_state;
@@ -549,11 +635,19 @@ OV7725M12_CaptureState_t OV7725M12_GetCaptureState(uint32_t *dcmi_error)
   return state;
 }
 
+/**
+ * @brief 获取固定的 SDRAM 全分辨率帧缓冲区地址。
+ * @return 指向 QVGA RGB565 帧缓冲区的指针。
+ */
 uint8_t *OV7725M12_GetFrameBuffer(void)
 {
   return frame_buffer;
 }
 
+/**
+ * @brief 在 DMA 完成后使帧缓冲区对应的 D-Cache 失效。
+ * @note CPU 读取新采集帧之前必须调用此函数。
+ */
 void OV7725M12_PrepareFrameForCpu(void)
 {
   __DMB();
@@ -568,6 +662,11 @@ void OV7725M12_PrepareFrameForCpu(void)
 #endif
 }
 
+/**
+ * @brief 计算当前帧的哈希值、像素变化次数以及原始值范围。
+ * @param[out] stats 用于返回帧诊断统计结果的结构体指针。
+ * @note 调用前必须先通过 OV7725M12_PrepareFrameForCpu() 获取 DMA 最新数据。
+ */
 void OV7725M12_AnalyzeFrame(OV7725M12_FrameStats_t *stats)
 {
   const uint16_t *pixels = (const uint16_t *)frame_buffer;
@@ -615,6 +714,10 @@ void OV7725M12_AnalyzeFrame(OV7725M12_FrameStats_t *stats)
   stats->max_word = max_word;
 }
 
+/**
+ * @brief 处理 HAL DCMI 帧完成事件并发布采集结果。
+ * @param[in,out] hdcmi 触发回调的 DCMI 句柄。
+ */
 void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
 {
   if ((hdcmi == active_dcmi) &&
@@ -638,6 +741,10 @@ void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
   }
 }
 
+/**
+ * @brief 处理 HAL DCMI 错误事件并记录 DCMI/DMA 错误状态。
+ * @param[in,out] hdcmi 触发回调的 DCMI 句柄。
+ */
 void HAL_DCMI_ErrorCallback(DCMI_HandleTypeDef *hdcmi)
 {
   if (hdcmi == active_dcmi)
@@ -652,6 +759,10 @@ void HAL_DCMI_ErrorCallback(DCMI_HandleTypeDef *hdcmi)
   }
 }
 
+/**
+ * @brief 在 DMA 写入帧缓冲区前清理并失效对应的 D-Cache。
+ * @note 此操作用于防止脏 Cache Line 在采集期间回写并覆盖 DMA 数据。
+ */
 static void OV7725M12_PrepareFrameForDma(void)
 {
 #if (__DCACHE_PRESENT == 1U)

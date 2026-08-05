@@ -1,6 +1,6 @@
 /**
  * @file app_camera.c
- * @brief Implements OV7725 capture and LVGL preview buffer management.
+ * @brief 实现 OV7725 图像采集与 LVGL 预览缓冲区管理。
  */
 
 #include "app_camera.h"
@@ -21,9 +21,9 @@
 #if APP_CAMERA_DIAGNOSTIC_ENABLE
 typedef enum
 {
-  E_APP_CAMERA_CAPTURE_FAILED = 0, /**< The snapshot operation failed. */
-  E_APP_CAMERA_CAPTURE_UNIFORM,   /**< The captured frame contains one value. */
-  E_APP_CAMERA_CAPTURE_ACTIVE     /**< The captured frame contains changing data. */
+  E_APP_CAMERA_CAPTURE_FAILED = 0, /**< 单帧采集操作失败。 */
+  E_APP_CAMERA_CAPTURE_UNIFORM,   /**< 采集帧只包含同一个像素值。 */
+  E_APP_CAMERA_CAPTURE_ACTIVE     /**< 采集帧包含变化的像素数据。 */
 } eAppCameraCaptureResultDef;
 #endif
 
@@ -34,16 +34,16 @@ static lv_img_dsc_t tPreviewDescriptors[APP_CAMERA_PREVIEW_BUFFER_COUNT];
 static lv_obj_t * ptPreviewModeLabels[4];
 #endif
 
-/* Three SDRAM buffers let the producer replace a pending frame safely. */
+/* 三个 SDRAM 缓冲区允许采集任务安全替换尚未显示的待处理帧。 */
 static volatile uint8_t u8PreviewActiveIndex = APP_CAMERA_INDEX_NONE;
 static volatile uint8_t u8PreviewPendingIndex = APP_CAMERA_INDEX_NONE;
 static uint8_t u8PreviewNextWriteIndex;
 
 /**
- * @brief Resolves one preview buffer within the reserved SDRAM application area.
- * @param[in] u8Index Index of the requested preview buffer.
- * @return Pointer to the selected preview buffer.
- * @note Preview buffers begin immediately after the full-resolution capture buffer.
+ * @brief 计算指定预览缓冲区在 SDRAM 预留区域中的地址。
+ * @param[in] u8Index 待获取的预览缓冲区索引。
+ * @return 指向指定预览缓冲区的指针。
+ * @note 预览缓冲区紧接在全分辨率采集缓冲区之后。
  */
 static uint8_t * AppCamera_GetPreviewBuffer(uint8_t u8Index)
 {
@@ -55,9 +55,9 @@ static uint8_t * AppCamera_GetPreviewBuffer(uint8_t u8Index)
 }
 
 /**
- * @brief Selects a preview buffer not owned by the producer or LVGL.
- * @return An available buffer index, or APP_CAMERA_INDEX_NONE when all buffers are owned.
- * @note Shared ownership indices are read and updated inside an RTOS critical section.
+ * @brief 选择一个当前未被采集任务或 LVGL 占用的预览缓冲区。
+ * @return 可用缓冲区索引；全部缓冲区均被占用时返回 APP_CAMERA_INDEX_NONE。
+ * @note 共享的所有权索引必须在 RTOS 临界区内读取和更新。
  */
 static uint8_t AppCamera_AcquireWriteBuffer(void)
 {
@@ -89,9 +89,9 @@ static uint8_t AppCamera_AcquireWriteBuffer(void)
 }
 
 /**
- * @brief Transfers ownership of a filled preview buffer to the LVGL task.
- * @param[in] u8Index Index of the completed preview buffer.
- * @note The data memory barrier completes buffer writes before publishing the index.
+ * @brief 将已填充预览缓冲区的所有权交给 LVGL 任务。
+ * @param[in] u8Index 已完成写入的预览缓冲区索引。
+ * @note 发布索引前通过数据内存屏障确保缓冲区写入完成。
  */
 static void AppCamera_PublishPreviewBuffer(uint8_t u8Index)
 {
@@ -102,10 +102,10 @@ static void AppCamera_PublishPreviewBuffer(uint8_t u8Index)
 }
 
 /**
- * @brief Converts one captured RGB565 pixel into the configured preview layout.
- * @param[in] pu8Source Pointer to the two captured pixel bytes.
- * @param[out] pu8Destination Pointer receiving the two converted pixel bytes.
- * @param[in] u8Transform Bit mask selecting byte and red-blue transformations.
+ * @brief 按当前配置转换一个采集到的 RGB565 像素。
+ * @param[in] pu8Source 指向源像素两个字节的指针。
+ * @param[out] pu8Destination 指向转换后两个像素字节存放位置的指针。
+ * @param[in] u8Transform 用于选择字节交换和红蓝通道交换的位掩码。
  */
 static void AppCamera_WritePreviewPixel(const uint8_t * pu8Source,
                                         uint8_t * pu8Destination,
@@ -137,9 +137,9 @@ static void AppCamera_WritePreviewPixel(const uint8_t * pu8Source,
 }
 
 /**
- * @brief Crops and downsamples one QVGA frame into the LCD preview buffers.
- * @param[in] pu8Source Pointer to the captured QVGA RGB565 frame.
- * @param[out] pu8Destination Pointer to the destination preview buffer.
+ * @brief 将一帧 QVGA 图像裁剪并降采样到 LCD 预览缓冲区。
+ * @param[in] pu8Source 指向采集到的 QVGA RGB565 帧。
+ * @param[out] pu8Destination 指向目标预览缓冲区。
  */
 static void AppCamera_CropAndDownsample(const uint8_t * pu8Source,
                                         uint8_t * pu8Destination)
@@ -147,7 +147,7 @@ static void AppCamera_CropAndDownsample(const uint8_t * pu8Source,
   uint32_t OutputY;
 
 #if APP_CAMERA_COLOR_COMPARE_ENABLE
-  /* Each quadrant shows the same central 320x160 crop with one transform. */
+  /* 四个区域显示相同的中央 320x160 裁剪内容，并分别应用一种像素转换。 */
   for (OutputY = 0U; OutputY < APP_CAMERA_PREVIEW_HEIGHT; ++OutputY)
   {
     const uint32_t LocalY = OutputY % APP_CAMERA_COMPARE_HEIGHT;
@@ -193,7 +193,7 @@ static void AppCamera_CropAndDownsample(const uint8_t * pu8Source,
   Transform |= APP_CAMERA_TRANSFORM_SWAP_RED_BLUE;
 #endif
 
-  /* Crop the 320x240 source to its central 320x160 region, then sample 2x2. */
+  /* 将 320x240 源图像裁剪为中央 320x160 区域，再按 2x2 步长采样。 */
   for (OutputY = 0U; OutputY < APP_CAMERA_PREVIEW_HEIGHT; ++OutputY)
   {
     const uint32_t SourceY = 40U + (OutputY * 2U);
@@ -220,10 +220,10 @@ static void AppCamera_CropAndDownsample(const uint8_t * pu8Source,
 }
 
 /**
- * @brief Captures one frame and prepares its SDRAM buffer for CPU access.
- * @param[out] pu32ElapsedMs Optional pointer receiving the capture duration.
- * @retval 0 The capture failed or timed out.
- * @retval 1 The frame was captured successfully.
+ * @brief 采集一帧图像，并将 SDRAM 缓冲区准备为 CPU 可访问状态。
+ * @param[out] pu32ElapsedMs 可选输出指针，用于返回采集耗时。
+ * @retval 0 采集失败或等待超时。
+ * @retval 1 图像帧采集成功。
  */
 static uint8_t AppCamera_CaptureFrame(uint32_t * pu32ElapsedMs)
 {
@@ -319,8 +319,8 @@ static uint8_t AppCamera_CaptureFrame(uint32_t * pu32ElapsedMs)
 
 #if APP_CAMERA_DIAGNOSTIC_ENABLE
 /**
- * @brief Reads and logs the sensor registers used to diagnose exposure and DSP state.
- * @param[in] pcLabel Optional label included in the diagnostic output.
+ * @brief 读取并输出用于诊断曝光和 DSP 状态的传感器寄存器。
+ * @param[in] pcLabel 可选的诊断日志标签。
  */
 static void AppCamera_DumpSensorState(const char * pcLabel)
 {
@@ -408,12 +408,12 @@ static void AppCamera_DumpSensorState(const char * pcLabel)
 }
 
 /**
- * @brief Configures the sensor and DSP color-bar generators for diagnostics.
- * @param[in] u8SensorEnable Nonzero to enable the sensor color-bar generator.
- * @param[in] u8DspEnable Nonzero to enable the DSP color-bar generator.
- * @param[in] pcLabel Optional label included in the diagnostic output.
- * @retval 0 The requested color-bar configuration failed.
- * @retval 1 The requested color-bar configuration was applied.
+ * @brief 配置传感器和 DSP 的诊断彩条发生器。
+ * @param[in] u8SensorEnable 非零值表示启用传感器彩条。
+ * @param[in] u8DspEnable 非零值表示启用 DSP 彩条。
+ * @param[in] pcLabel 可选的诊断日志标签。
+ * @retval 0 彩条配置失败。
+ * @retval 1 彩条配置成功。
  */
 static uint8_t AppCamera_SetColorBarStages(uint8_t u8SensorEnable,
                                            uint8_t u8DspEnable,
@@ -442,9 +442,9 @@ static uint8_t AppCamera_SetColorBarStages(uint8_t u8SensorEnable,
 }
 
 /**
- * @brief Captures one diagnostic frame and classifies its pixel activity.
- * @param[in] pcLabel Optional label included in the diagnostic output.
- * @return Classification of the captured diagnostic frame.
+ * @brief 采集一帧诊断图像并判断像素数据是否有效变化。
+ * @param[in] pcLabel 可选的诊断日志标签。
+ * @return 诊断帧的采集结果分类。
  */
 static eAppCameraCaptureResultDef AppCamera_CaptureDiagnostic(const char * pcLabel)
 {
@@ -491,7 +491,7 @@ static eAppCameraCaptureResultDef AppCamera_CaptureDiagnostic(const char * pcLab
 }
 
 /**
- * @brief Runs the staged exposure and color-bar capture diagnostics.
+ * @brief 依次执行曝光收敛和彩条采集诊断流程。
  */
 static void AppCamera_RunDiagnostic(void)
 {
@@ -546,8 +546,8 @@ static void AppCamera_RunDiagnostic(void)
 #endif /* APP_CAMERA_DIAGNOSTIC_ENABLE */
 
 /**
- * @brief Initializes camera preview state and SDRAM image descriptors.
- * @note Call this function before creating the camera and GUI tasks.
+ * @brief 初始化摄像头预览状态和 SDRAM 图像描述符。
+ * @note 必须在创建摄像头任务和 GUI 任务之前调用。
  */
 void AppCamera_Init(void)
 {
@@ -571,8 +571,8 @@ void AppCamera_Init(void)
 }
 
 /**
- * @brief Creates the LVGL objects used to display the camera preview.
- * @note Call this function only from the task that owns LVGL.
+ * @brief 创建用于显示摄像头预览的 LVGL 对象。
+ * @note 只能由拥有 LVGL 调用权的任务执行。
  */
 void AppCamera_GuiInit(void)
 {
@@ -621,8 +621,8 @@ void AppCamera_GuiInit(void)
 }
 
 /**
- * @brief Publishes a pending camera frame to the LVGL image object.
- * @note Call this function only from the task that owns LVGL.
+ * @brief 将待显示摄像头帧发布到 LVGL 图像对象。
+ * @note 只能由拥有 LVGL 调用权的任务执行。
  */
 void AppCamera_GuiProcess(void)
 {
@@ -651,8 +651,8 @@ void AppCamera_GuiProcess(void)
 }
 
 /**
- * @brief Runs camera detection, configuration, capture, and preview production.
- * @param[in] pvArgument Optional RTOS task argument. The current implementation ignores it.
+ * @brief 执行摄像头检测、配置、图像采集和预览帧生产流程。
+ * @param[in] pvArgument 可选 RTOS 任务参数，当前实现不使用该参数。
  */
 void AppCamera_Task(void * pvArgument)
 {
@@ -721,7 +721,7 @@ void AppCamera_Task(void * pvArgument)
     WriteIndex = AppCamera_AcquireWriteBuffer();
     if (WriteIndex == APP_CAMERA_INDEX_NONE)
     {
-      /* UI is still flushing the previous frames; keep the newest capture only. */
+      /* UI 仍在处理之前的帧，此时仅保留最新采集结果。 */
       osDelay(1U);
       continue;
     }
