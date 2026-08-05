@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_PWR_LDO_SUPPLY,USE_HAL_DRIVER,STM32H743xx,LV_CONF_INCLUDE_SIMPLE,LV_LVGL_H_INCLUDE_SIMPLE</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../App/FileTransfer;../App/Storage;../App/Runtime;../App/Camera;../App/Gui;../App/Gui/LvglPort;../External/lvgl-8.4.0;../External/lvgl-8.4.0/src;../External/keil_ac6_rlottie/install/include;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../BSP/ST7735;../BSP/ov7725m12;../External/CherryUSB-1.6.1/core;../External/CherryUSB-1.6.1/osal;../External/CherryUSB-1.6.1/port/dwc2;../External/CherryUSB-1.6.1/class/cdc;../External/CherryUSB-1.6.1/class/msc;../External/CherryUSB-1.6.1/common;../BSP/CherryUSB_port;../External/SEGGER_RTT_V798a/RTT;../External/SEGGER_RTT_V798a/Config;../FATFS/Target;../FATFS/App;../Middlewares/Third_Party/FatFs/src</IncludePath>
+              <IncludePath>../Core/Inc;../Code;../Code/App/FileTransfer;../Code/App/Storage;../Code/App/Runtime;../Code/App/Camera;../Code/App/Gui;../Code/App/Gui/LvglPort;../External/lvgl-8.4.0;../External/lvgl-8.4.0/src;../External/keil_ac6_rlottie/install/include;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Code/Bsp/St7735;../Code/Bsp/Ov7725m12;../External/CherryUSB-1.6.1/core;../External/CherryUSB-1.6.1/osal;../External/CherryUSB-1.6.1/port/dwc2;../External/CherryUSB-1.6.1/class/cdc;../External/CherryUSB-1.6.1/class/msc;../External/CherryUSB-1.6.1/common;../Code/Bsp/CherryUSB_port;../External/SEGGER_RTT_V798a/RTT;../External/SEGGER_RTT_V798a/Config;../FATFS/Target;../FATFS/App;../Middlewares/Third_Party/FatFs/src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -788,7 +788,7 @@
             <File>
               <FileName>file_rx.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../App/FileTransfer/file_rx.c</FilePath>
+              <FilePath>../Code/App/FileTransfer/file_rx.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -798,7 +798,7 @@
             <File>
               <FileName>sd_manager.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../App/Storage/sd_manager.c</FilePath>
+              <FilePath>../Code/App/Storage/sd_manager.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -808,7 +808,7 @@
             <File>
               <FileName>app_runtime.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../App/Runtime/app_runtime.c</FilePath>
+              <FilePath>../Code/App/Runtime/app_runtime.c</FilePath>
             </File>
             <File>
               <FileName>keil_ac6_retarget.c</FileName>
@@ -823,7 +823,7 @@
             <File>
               <FileName>app_camera.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../App/Camera/app_camera.c</FilePath>
+              <FilePath>../Code/App/Camera/app_camera.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -833,7 +833,7 @@
             <File>
               <FileName>app_gui.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../App/Gui/app_gui.c</FilePath>
+              <FilePath>../Code/App/Gui/app_gui.c</FilePath>
             </File>
             <File>
               <FileName>rlottie.lib</FileName>
@@ -848,17 +848,17 @@
             <File>
               <FileName>lv_port_disp.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../App/Gui/LvglPort/lv_port_disp.c</FilePath>
+              <FilePath>../Code/App/Gui/LvglPort/lv_port_disp.c</FilePath>
             </File>
             <File>
               <FileName>lv_port_indev.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../App/Gui/LvglPort/lv_port_indev.c</FilePath>
+              <FilePath>../Code/App/Gui/LvglPort/lv_port_indev.c</FilePath>
             </File>
             <File>
               <FileName>lv_port_fs.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../App/Gui/LvglPort/lv_port_fs.c</FilePath>
+              <FilePath>../Code/App/Gui/LvglPort/lv_port_fs.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2883,27 +2883,27 @@
             <File>
               <FileName>lcd.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\BSP\ST7735\lcd.c</FilePath>
+              <FilePath>..\Code\Bsp\St7735\lcd.c</FilePath>
             </File>
             <File>
               <FileName>logo_128_160.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\BSP\ST7735\logo_128_160.c</FilePath>
+              <FilePath>..\Code\Bsp\St7735\logo_128_160.c</FilePath>
             </File>
             <File>
               <FileName>logo_160_80.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\BSP\ST7735\logo_160_80.c</FilePath>
+              <FilePath>..\Code\Bsp\St7735\logo_160_80.c</FilePath>
             </File>
             <File>
               <FileName>st7735.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\BSP\ST7735\st7735.c</FilePath>
+              <FilePath>..\Code\Bsp\St7735\st7735.c</FilePath>
             </File>
             <File>
               <FileName>st7735_reg.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\BSP\ST7735\st7735_reg.c</FilePath>
+              <FilePath>..\Code\Bsp\St7735\st7735_reg.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2913,7 +2913,7 @@
             <File>
               <FileName>ov7725m12.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\BSP\ov7725m12\ov7725m12.c</FilePath>
+              <FilePath>..\Code\Bsp\Ov7725m12\ov7725m12.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2948,12 +2948,12 @@
             <File>
               <FileName>usb_dwc2_port.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\BSP\CherryUSB_port\usb_dwc2_port.c</FilePath>
+              <FilePath>..\Code\Bsp\CherryUSB_port\usb_dwc2_port.c</FilePath>
             </File>
             <File>
               <FileName>cherryusb_app.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\BSP\CherryUSB_port\cherryusb_app.c</FilePath>
+              <FilePath>..\Code\Bsp\CherryUSB_port\cherryusb_app.c</FilePath>
             </File>
           </Files>
         </Group>
