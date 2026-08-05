@@ -136,19 +136,18 @@
 ;     explicit cache maintenance is still required for true coherency.
 ;
 ; ---------------------------------------------------------------------------------------------------
-; Optional section names for future use
+; 用户可用的显式 section 名称
 ; ---------------------------------------------------------------------------------------------------
 ;
-;   .itcm_text*       code copied from Flash and executed from ITCM
-;   .dtcm_data*       CPU-only fast data in DTCM
-;   .axi_dma*         explicit AXI SRAM DMA buffers
-;   .d2_sram*         explicit D2 SRAM objects
-;   .d3_sram*         explicit D3 SRAM objects
-;   .bkpsram*         backup SRAM objects
+;   .itcm_text*       从 Flash 复制到 ITCM 执行的热点代码
+;   .bss.dtcm_data*   DTCM 中 CPU 专用的零初始化高速数据
+;   .bss.axi_dma*     AXI SRAM 中的零初始化 DMA 缓冲区
+;   .bss.d2_sram*     D2 SRAM 中的零初始化对象
+;   .bss.d3_sram*     D3 SRAM 中的零初始化对象
+;   .bss.bkpsram*     Backup SRAM 中不执行初始化的保留对象
 ;
-; Add the matching execution region at the end of this file when one of these
-; optional sections is first used. Leaving unused selectors active makes armlink
-; emit L6314W warnings, so the examples are kept commented out.
+; 下方已启用对应执行区。某个 USER_* 宏尚未被对象使用时，对应空执行区可能
+; 产生 L6314W 警告；开始使用该宏后警告会消失。
 
 LR_IROM1 0x08000000 0x00200000  {       ; Load region: whole image stored in Flash
 
@@ -188,7 +187,7 @@ LR_IROM1 0x08000000 0x00200000  {       ; Load region: whole image stored in Fla
   ; AXI range used here:
   ;   0x24000000-0x2405FFFF  384KB RW/ZI data and .noncacheable*
   RW_AXI 0x24000000 0x00060000  {
-   *(.noncacheable*)
+   *(.*noncacheable*)
    .ANY (+RW +ZI)
   }
 
@@ -204,32 +203,31 @@ LR_IROM1 0x08000000 0x00200000  {       ; Load region: whole image stored in Fla
    startup_stm32h743xx.o (HEAP)
   }
 
-; Example optional execution regions:
-;
-; Enable only when the corresponding input section exists in the project. For C
-; code compiled by ARMClang, one typical declaration style is:
-;   __attribute__((section(".dtcm_data"))) uint8_t fast_buffer[1024];
-;
-; For DMA buffers, prefer AXI or D2 SRAM and verify cache policy. DTCM is fast
-; for the CPU but is usually the wrong place for peripheral DMA.
-;
-;  ER_ITCM 0x00000000 0x00010000  {      ; 64KB ITCM, optional hot code
-;   *(.itcm_text*)
-;  }
-;
-  RW_DTCM 0x20000000 0x0001C000  {      ; 112KB DTCM, CPU-only fast data
-    *(.dtcm_data*)
+  ; ITCM 代码从 Flash 加载，并在 main() 前复制到 ITCM。整个区域只有 64KB，
+  ; 仅用于体积小且调用频繁、对延迟敏感的 CPU 函数。
+  ER_ITCM 0x00000000 0x00010000  {       ; 64KB ITCM 热点代码区
+    *(.itcm_text*)
   }
-;
-;  RW_D2_SRAM 0x30000000 0x00048000  {   ; 288KB D2 SRAM via AHB address
-;   *(.d2_sram*)
-;  }
-;
-;  RW_D3_SRAM 0x38000000 0x00010000  {   ; 64KB D3 SRAM
-;   *(.d3_sram*)
-;  }
-;
-;  RW_BKPSRAM 0x38800000 0x00001000  {   ; 4KB backup SRAM
-;   *(.bkpsram*)
-;  }
+
+  ; DTCM 是 M7 内核访问最快的数据 RAM，但外设 DMA 通常无法访问。
+  ; 顶部 16KB 继续保留给 STACK。
+  RW_DTCM 0x20000000 0x0001C000  {      ; 112KB DTCM，CPU 专用高速数据
+    *(.bss.dtcm_data*)
+  }
+
+  ; D2 域外设和 DMA 使用 0x30000000 AHB 别名地址访问这里的缓冲区。
+  RW_D2_SRAM 0x30000000 0x00048000  {   ; 288KB D2 SRAM，使用 AHB 地址
+    *(.bss.d2_sram*)
+  }
+
+  ; D3 SRAM 适合由固件显式管理的低功耗数据和 D3 域局部状态。
+  RW_D3_SRAM 0x38000000 0x00010000  {   ; 64KB D3 SRAM
+    *(.bss.d3_sram*)
+  }
+
+  ; 固件启用备份域访问前，Backup SRAM 不能执行复制或清零。
+  ; 保留对象必须不带初始化值声明。
+  RW_BKPSRAM 0x38800000 UNINIT 0x00001000  { ; 4KB Backup SRAM 保留区
+    *(.bss.bkpsram*)
+  }
 }

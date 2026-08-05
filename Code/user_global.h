@@ -11,20 +11,30 @@
 #define __USER_GLOBAL_H__
 
 #include "main.h"
-#include "Task.h"
+#include "FreeRTOS.h"
+#include "task.h"
 #include <stdint.h>
 #include <string.h>
 
 #include "SEGGER_RTT.h"
 
-// #include "Task.h"
-// #if defined(__CC_ARM)
-// #define USER_MOTOR_CCMRAM     __attribute__((section(".ccmram"), zero_init))
-// #define USER_MOTOR_FAST_CODE  __attribute__((section(".fastcode")))
-// #else
-// #define USER_MOTOR_CCMRAM     __attribute__((section(".ccmram")))
-// #define USER_MOTOR_FAST_CODE  __attribute__((section(".fastcode")))
-// #endif
+#if defined(__CC_ARM) && !defined(__clang__)
+#define USER_ITCM_CODE       __attribute__((section(".itcm_text")))             /* ITCM 64 KB：适合极低延迟热点代码，同时占用 Flash 加载空间。 */
+#define USER_DTCM_DATA       __attribute__((section(".bss.dtcm_data"), zero_init)) /* DTCM 112 KB：适合 CPU 专用高速零初始化数据，禁止用于外设 DMA。 */
+#define USER_AXI_DMA         __attribute__((section(".axi_dma"), zero_init))    /* AXI SRAM 共享 384 KB：适合 DMA 缓冲区，必须执行 Cache 一致性维护。 */
+#define USER_AXI_NOCACHE     __attribute__((section(".bss.noncacheable"), zero_init)) /* AXI SRAM 共享 384 KB：适合由 MPU 配置为非缓存区的 DMA 缓冲区。 */
+#define USER_D2_SRAM         __attribute__((section(".bss.d2_sram"), zero_init)) /* D2 SRAM 288 KB：适合外设 DMA 缓冲区，使用 0x30000000 AHB 地址。 */
+#define USER_D3_SRAM         __attribute__((section(".bss.d3_sram"), zero_init)) /* D3 SRAM 64 KB：适合低功耗或 D3 域数据，使用前确认外设可访问。 */
+#define USER_BACKUP_SRAM     __attribute__((section(".bss.bkpsram")))           /* Backup SRAM 4 KB：适合复位或待机保留数据，使用前必须配置备份域。 */
+#else
+#define USER_ITCM_CODE       __attribute__((section(".itcm_text")))     /* ITCM 64 KB：适合极低延迟热点代码，同时占用 Flash 加载空间。 */
+#define USER_DTCM_DATA       __attribute__((section(".bss.dtcm_data"))) /* DTCM 112 KB：适合 CPU 专用高速零初始化数据，禁止用于外设 DMA。 */
+#define USER_AXI_DMA         __attribute__((section(".bss.axi_dma")))   /* AXI SRAM 共享 384 KB：适合零初始化 DMA 缓冲区，必须执行 Cache 一致性维护。 */
+#define USER_AXI_NOCACHE     __attribute__((section(".bss.noncacheable"))) /* AXI SRAM 共享 384 KB：适合零初始化 DMA 缓冲区，必须配置对应 MPU 非缓存区。 */
+#define USER_D2_SRAM         __attribute__((section(".bss.d2_sram")))   /* D2 SRAM 288 KB：适合零初始化 DMA 缓冲区，使用 0x30000000 AHB 地址。 */
+#define USER_D3_SRAM         __attribute__((section(".bss.d3_sram")))   /* D3 SRAM 64 KB：适合零初始化低功耗数据，使用前确认外设可访问。 */
+#define USER_BACKUP_SRAM     __attribute__((section(".bss.bkpsram")))   /* Backup SRAM 4 KB：适合复位或待机保留数据，使用前必须配置备份域。 */
+#endif
 
 #define ABS_DIFF(a, b) ((a)>(b)?(a)-(b):(b)-(a))
 #define INCEX(X) (X = (++X == 0) ? (--X) : (X)) // 自加数 限制max
