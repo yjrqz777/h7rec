@@ -439,7 +439,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../App/FileTransfer/file_rx.c</PathWithFileName>
+      <PathWithFileName>../Code/App/FileTransfer/file_rx.c</PathWithFileName>
       <FilenameWithoutPath>file_rx.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -459,7 +459,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../App/Storage/sd_manager.c</PathWithFileName>
+      <PathWithFileName>../Code/App/Storage/sd_manager.c</PathWithFileName>
       <FilenameWithoutPath>sd_manager.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -479,7 +479,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../App/Runtime/app_runtime.c</PathWithFileName>
+      <PathWithFileName>../Code/App/Runtime/app_runtime.c</PathWithFileName>
       <FilenameWithoutPath>app_runtime.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -511,7 +511,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../App/Camera/app_camera.c</PathWithFileName>
+      <PathWithFileName>../Code/App/Camera/app_camera.c</PathWithFileName>
       <FilenameWithoutPath>app_camera.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -531,7 +531,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../App/Gui/app_gui.c</PathWithFileName>
+      <PathWithFileName>../Code/App/Gui/app_gui.c</PathWithFileName>
       <FilenameWithoutPath>app_gui.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -563,7 +563,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../App/Gui/LvglPort/lv_port_disp.c</PathWithFileName>
+      <PathWithFileName>../Code/App/Gui/LvglPort/lv_port_disp.c</PathWithFileName>
       <FilenameWithoutPath>lv_port_disp.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -575,7 +575,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../App/Gui/LvglPort/lv_port_indev.c</PathWithFileName>
+      <PathWithFileName>../Code/App/Gui/LvglPort/lv_port_indev.c</PathWithFileName>
       <FilenameWithoutPath>lv_port_indev.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -587,7 +587,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../App/Gui/LvglPort/lv_port_fs.c</PathWithFileName>
+      <PathWithFileName>../Code/App/Gui/LvglPort/lv_port_fs.c</PathWithFileName>
       <FilenameWithoutPath>lv_port_fs.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -3567,7 +3567,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\BSP\ST7735\lcd.c</PathWithFileName>
+      <PathWithFileName>..\Code\Bsp\St7735\lcd.c</PathWithFileName>
       <FilenameWithoutPath>lcd.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -3579,7 +3579,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\BSP\ST7735\logo_128_160.c</PathWithFileName>
+      <PathWithFileName>..\Code\Bsp\St7735\logo_128_160.c</PathWithFileName>
       <FilenameWithoutPath>logo_128_160.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -3591,7 +3591,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\BSP\ST7735\logo_160_80.c</PathWithFileName>
+      <PathWithFileName>..\Code\Bsp\St7735\logo_160_80.c</PathWithFileName>
       <FilenameWithoutPath>logo_160_80.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -3603,7 +3603,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\BSP\ST7735\st7735.c</PathWithFileName>
+      <PathWithFileName>..\Code\Bsp\St7735\st7735.c</PathWithFileName>
       <FilenameWithoutPath>st7735.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -3615,7 +3615,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\BSP\ST7735\st7735_reg.c</PathWithFileName>
+      <PathWithFileName>..\Code\Bsp\St7735\st7735_reg.c</PathWithFileName>
       <FilenameWithoutPath>st7735_reg.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -3635,7 +3635,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\BSP\ov7725m12\ov7725m12.c</PathWithFileName>
+      <PathWithFileName>..\Code\Bsp\Ov7725m12\ov7725m12.c</PathWithFileName>
       <FilenameWithoutPath>ov7725m12.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -3715,7 +3715,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\BSP\CherryUSB_port\usb_dwc2_port.c</PathWithFileName>
+      <PathWithFileName>..\Code\Bsp\CherryUSB_port\usb_dwc2_port.c</PathWithFileName>
       <FilenameWithoutPath>usb_dwc2_port.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -3727,7 +3727,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\BSP\CherryUSB_port\cherryusb_app.c</PathWithFileName>
+      <PathWithFileName>..\Code\Bsp\CherryUSB_port\cherryusb_app.c</PathWithFileName>
       <FilenameWithoutPath>cherryusb_app.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
