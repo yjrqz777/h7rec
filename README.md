@@ -29,6 +29,7 @@ STM32H743 工程，基于 FreeRTOS，实现 USB CDC 文件传输到 SD 卡，并
 - LVGL 8.4.0 移植与基础显示测试
 - SEGGER RTT 输出调试信息
 - SDRAM-IS42S32800 移植
+- Ov7725m12
 
 ## 目录说明
 
@@ -40,6 +41,7 @@ App/
 BSP/
   CherryUSB_port/ CherryUSB 移植代码
   ST7735/         LCD 驱动与显示测试
+
 Core/             CubeMX 生成的主工程代码和 FreeRTOS 任务
 External/         CherryUSB、SEGGER RTT、LVGL 等第三方库
 FATFS/            CubeMX 生成的 FatFs 应用层配置
